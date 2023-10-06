@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "QmbP5JdnxF3G4hOFDozeUzRaNLwG9DS/A9v0yZDMmGP2q+r86MCnMRbI2Z4CfeJKtTOpANW50yh6NVEys+lysw==",
+  "success": true,
+  "projectFilePath": "C:\\src\\common.net\\NetworkUtilities\\NetworkUtilities.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\mikael\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\6.0.0\\microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
+    "C:\\Users\\mikael\\.nuget\\packages\\npgsql\\8.0.0-preview.4\\npgsql.8.0.0-preview.4.nupkg.sha512"
+  ],
+  "logs": []
+}
