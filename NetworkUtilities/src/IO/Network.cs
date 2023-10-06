@@ -1,17 +1,26 @@
 using RoutingKit;
 using System.Linq;
+using Pipos.Common.NetworkUtilities.Model;
+using Pipos.Common.NetworkUtilities.Processing;
 
-namespace Utils;
+namespace Pipos.Common.NetworkUtilities.IO;
 
 public static class Network
 {
     public static async Task<RoutingGraph> LoadNVDB()
     {
         var connectionString = "Server=pipos.dev.tillvaxtverket.se;database=pipos_master;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
-        var (nodes, edges) = await NVDB.ReadData(connectionString);
-        GraphOptimizer.Optimize(nodes);
+        var connectionStringrut = "Server=pipos.dev.tillvaxtverket.se;database=pip_rutdata;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
+
+        var nodes = await NVDB.ReadData(connectionString, 2022);
+
+
+        var population_tiles = await ActivityTile.ReadPopulationTilesFromDb(connectionStringrut, 2022);
+        // Pin nodes with population
+        //GraphOptimizer.PinActivityTile(nodes, population_tiles);
+        //GraphOptimizer.Optimize(nodes);
         
-        HashSet<Edge> edges_set = new HashSet<Edge>(edges.Count);
+        HashSet<Edge> edges_set = new HashSet<Edge>();
 
         var graph = new RoutingGraph();
         var nnodes = nodes.Count;
@@ -29,7 +38,7 @@ public static class Network
                 edges_set.Add(edge);
         }
 
-        edges = edges_set.ToList();
+        var edges = edges_set.ToList();
         for (var i = 0; i < edges.Count; i++) 
         {
             var edge = edges[i];

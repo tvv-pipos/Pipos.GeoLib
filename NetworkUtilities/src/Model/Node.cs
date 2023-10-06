@@ -14,6 +14,7 @@ public class Node
         NetworkGroup = networkGroup;
         FunctionClass = functionClass;
         Edges = new List<Edge>();
+        Pinned = false;
     }
 
     public Node(int x, int y, NodeType nodeType = NodeType.Default)
@@ -22,15 +23,17 @@ public class Node
         Y = y;
         NodeType = nodeType;
         Edges = new List<Edge>();
+        Pinned = false;
     }
 
-    public int Index { get; set; }
     public long Id => (0xFFFFFFFF & Y) << 32 | (0xFFFFFFFF & X);
+    public int Index { get; set; }
+    public int Idx { get; set; }
     public int X { get; }
     public int Y { get; }
     public int FunctionClass { get; set; }
     public int NetworkGroup { get; set; }
-    public int EdgeCount { get; set; }
+    public bool Pinned { get; set; }
     public List<Edge> Edges { get; }
     public NodeType NodeType { get; set; }
 

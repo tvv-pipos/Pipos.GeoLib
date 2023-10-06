@@ -1,4 +1,4 @@
-namespace Utils;
+namespace Pipos.Common.NetworkUtilities.Model;
 
 public class RoutingGraph
 {

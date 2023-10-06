@@ -2,16 +2,33 @@ using System.Diagnostics;
 using System.Text;
 using Npgsql;
 
+namespace Pipos.Common.NetworkUtilities.IO;
+
 public static class NVDB
 {
-    public async static Task<List<Node>> ReadData(string connectionString)
+    public async static Task<List<Node>> ReadDataGotland(string connectionString)
+    {
+        var sql = @"
+            SELECT ST_AsText(the_geom) AS WKT, id, b_kkod, f_kkod, function_class, network_group 
+            FROM road_segment
+            WHERE ST_Intersects(the_geom, ST_GeomFromText('POLYGON ((670158.616364627 6443498.32614359,771465.213997485 6444662.76979455,764769.663004509 6301145.08981466,671031.949102841 6301145.08981466,670158.616364627 6443498.32614359))', 3006))";
+        return await ReadData(connectionString, sql);
+    }
+
+    public async static Task<List<Node>> ReadData(string connectionString, int scenario_id)
+    {
+        var sql = @"
+            SELECT ST_AsText(the_geom) AS WKT, id, b_kkod, f_kkod, function_class, network_group 
+            FROM road_segment";
+
+        return await ReadData(connectionString, sql);
+    }
+    private async static Task<List<Node>> ReadData(string connectionString, string sql)
     {
         Console.WriteLine($"Read and build graph...");
         var sw = Stopwatch.StartNew();
         var result = new Dictionary<long, Node>();
-        var sql = @"
-            SELECT ST_AsText(the_geom) AS WKT, id, b_kkod, f_kkod, function_class, network_group 
-            FROM road_segment";
+        
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
 
         await using (var cmd = dataSource.CreateCommand(sql))

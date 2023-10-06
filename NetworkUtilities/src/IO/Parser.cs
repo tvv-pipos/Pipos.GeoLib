@@ -1,3 +1,5 @@
+namespace Pipos.Common.NetworkUtilities.IO;
+
 public static class Parser
 {
     public static int[][] ParseLineString(string wkt)
@@ -16,28 +18,6 @@ public static class Parser
 
         return coordinates;
     }
-
-    public static double ParseDouble(string input)
-    {
-        var n = 0L;
-        var decimalPosition = input.Length;
-        char c;
-        for (var k = 0; k < input.Length; k++)
-        {
-            c = input[k];
-            if (c == '.')
-            {
-                decimalPosition = k + 1;
-            }
-            else
-            {
-                n = (n * 10) + (int)(c - '0');
-            }
-        }
-
-        return Decimal.ToDouble(new decimal((int)n, (int)(n >> 32), 0, false, (byte)(input.Length - decimalPosition)));
-    }
-
     public static List<Node> ParseNodes(int[][] lineString, int forwardSpeed, int backwardSpeed, 
         int networkGroup, int functionClass)
     {
@@ -91,5 +71,26 @@ public static class Parser
             y = y * 10L + (str[i] - '0');
         }
         return y;
+    }
+
+    public static double ParseDouble(string input)
+    {
+        var n = 0L;
+        var decimalPosition = input.Length;
+        char c;
+        for (var k = 0; k < input.Length; k++)
+        {
+            c = input[k];
+            if (c == '.')
+            {
+                decimalPosition = k + 1;
+            }
+            else
+            {
+                n = (n * 10) + (int)(c - '0');
+            }
+        }
+
+        return Decimal.ToDouble(new decimal((int)n, (int)(n >> 32), 0, false, (byte)(input.Length - decimalPosition)));
     }
 }

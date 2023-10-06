@@ -1,5 +1,7 @@
 using System.Text;
 
+namespace Pipos.Common.NetworkUtilities.IO;
+
 public static class Serializer
 {
     public static void Serialize(this List<Node> network, string filename)

@@ -1,4 +1,4 @@
-namespace Utils;
+namespace Pipos.Common.NetworkUtilities.Processing;
 
 using System;
 using System.Collections.Generic;

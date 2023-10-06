@@ -1,5 +1,41 @@
+using RoutingKit;
+using Pipos.Common.NetworkUtilities.Processing;
+using static Pipos.Common.NetworkUtilities.Model.PiposID;
+
 public static class GraphOptimizer
 {
+    public static void PinActivityTile(List<Node> nodes, List<int> activityTiles)
+    {
+        KDIndex _index = new KDIndex(nodes.Count);
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            _index.Add(nodes[i].X, nodes[i].Y);
+        }
+        _index.Finish();
+
+        for (var i = 0; i < activityTiles.Count; i++)
+        {
+            var x = XFromId(activityTiles[i]);
+            var y = YFromId(activityTiles[i]);
+            var radius = 250;
+            var neighbours = _index.Within(x, y, radius);
+            while (!neighbours.Any())
+            {
+                if (radius > 5000)
+                {
+                    break;
+                }
+                radius += 250;
+                neighbours = _index.Within(x, y, radius);
+            }
+
+            if (neighbours.Any())
+            {
+                var node_idx = neighbours.OrderBy(idx => SquareDist(nodes[idx].X, nodes[idx].Y, x, y)).First();
+                nodes[node_idx].Pinned = true;
+            }
+        }
+    }
     public static void Optimize(List<Node> nodes)
     {
         var counter = nodes.Count;
@@ -8,7 +44,7 @@ public static class GraphOptimizer
             counter = 0;
             foreach (var node in nodes)
             {
-                if (node.NodeType == NodeType.Connection)
+                if (node.NodeType == NodeType.Connection || node.Pinned)
                 {
                     continue;
                 }
@@ -117,6 +153,13 @@ public static class GraphOptimizer
         }
 
         return (nodes, edges, weights);
+    }
+
+    private static int SquareDist(int x1, int y1, int x2, int y2) 
+    {
+        var dx = x1 - x2;
+        var dy = y1 - y2;
+        return dx * dx + dy * dy;
     }
 
     // public static List<Edge> Optimize2(List<Node> graph)
