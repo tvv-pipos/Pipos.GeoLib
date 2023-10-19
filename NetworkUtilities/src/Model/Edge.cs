@@ -12,8 +12,8 @@ public class Edge
     public Node Source { get; set; }
     public Node Target { get; set; }
     public int Distance { get; set; }
-    public int ForwardTime { get; private set; }
-    public int BackwardTime { get; private set; }
+    public int ForwardTime { get; set; }
+    public int BackwardTime { get; set; }
     public bool IsConnectionEdge { get; set; }
 
     public Node GetOtherNode(Node node)

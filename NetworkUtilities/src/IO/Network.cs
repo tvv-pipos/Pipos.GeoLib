@@ -7,19 +7,16 @@ namespace Pipos.Common.NetworkUtilities.IO;
 
 public static class Network
 {
-    public static async Task<RoutingGraph> LoadNVDB()
+    public static async Task<RoutingGraph> LoadFullNVDB(int scenario_id)
     {
+        /* TODO: Use env variables */
         var connectionString = "Server=pipos.dev.tillvaxtverket.se;database=pipos_master;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
         var connectionStringrut = "Server=pipos.dev.tillvaxtverket.se;database=pip_rutdata;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
 
-        var nodes = await NVDB.ReadData(connectionString, 2022);
+        var nodes = await NVDB.ReadData(connectionString, scenario_id);
 
 
-        var population_tiles = await ActivityTile.ReadPopulationTilesFromDb(connectionStringrut, 2022);
-        // Pin nodes with population
-        //GraphOptimizer.PinActivityTile(nodes, population_tiles);
-        //GraphOptimizer.Optimize(nodes);
-        
+        var population_tiles = await ActivityTile.ReadPopulationTilesFromDb(connectionStringrut, scenario_id);      
         HashSet<Edge> edges_set = new HashSet<Edge>();
 
         var graph = new RoutingGraph();
@@ -69,8 +66,71 @@ public static class Network
         return graph;
     }
 
+    /*public static async Task<RoutingGraph> LoadOptimizedNVDB(int scenario_id)
+    {
+        var connectionString = "Server=pipos.dev.tillvaxtverket.se;database=pipos_master;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
+        var connectionStringrut = "Server=pipos.dev.tillvaxtverket.se;database=pip_rutdata;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
+
+        var nodes = await NVDB.ReadData(connectionString, scenario_id);
+
+
+        var population_tiles = await ActivityTile.ReadPopulationTilesFromDb(connectionStringrut, scenario_id);
+        // Pin nodes with population
+        GraphOptimizer.PinActivityTile(nodes, population_tiles);
+        GraphOptimizer.Optimize(nodes);
+
+        HashSet<Edge> edges_set = new HashSet<Edge>();
+
+        var graph = new RoutingGraph();
+        var nnodes = nodes.Count;
+        graph.Latitude = new List<int>(new int[nnodes]);
+        graph.Longitude = new List<int>(new int[nnodes]);
+
+        var nodeIdx = 0;
+        foreach (var node in nodes)
+        {
+            node.Idx = nodeIdx;
+            graph.Latitude[nodeIdx] = node.Y;
+            graph.Longitude[nodeIdx] = node.X;
+            nodeIdx++;
+            foreach (var edge in node.Edges)
+                edges_set.Add(edge);
+        }
+
+        var edges = edges_set.ToList();
+        for (var i = 0; i < edges.Count; i++)
+        {
+            var edge = edges[i];
+            if (edge.ForwardTime > 0) // kontrollera enkelriktat
+            {
+                graph.Tail.Add(edge.Source.Idx);
+                graph.Head.Add(edge.Target.Idx);
+                graph.GeoDistance.Add(edge.Distance);
+                graph.TravelTime.Add((int)Math.Round((edge.Distance / (float)edge.ForwardTime) * 3600));
+            }
+
+            if (edge.BackwardTime > 0)
+            {
+                graph.Tail.Add(edge.Target.Idx);
+                graph.Head.Add(edge.Source.Idx);
+                graph.GeoDistance.Add(edge.Distance);
+                graph.TravelTime.Add((int)Math.Round((edge.Distance / (float)edge.BackwardTime) * 3600));
+            }
+        }
+
+        var inputArcId = Sort.ComputeSortPermutationUsingLess(graph.Tail);
+        graph.Tail = Permutation.ApplyPermutation(inputArcId, graph.Tail);
+        graph.Head = Permutation.ApplyPermutation(inputArcId, graph.Head);
+        graph.GeoDistance = Permutation.ApplyPermutation(inputArcId, graph.GeoDistance);
+        graph.TravelTime = Permutation.ApplyPermutation(inputArcId, graph.TravelTime);
+        graph.FirstOut = InvVecUtils.InvertVector(graph.Tail, graph.Latitude.Count);
+
+        return graph;
+    }*/
+
     public static void WriteToFile(RoutingGraph graph, string filename)
     {
+        Directory.CreateDirectory(Path.GetDirectoryName(filename)!);
         using (var fileStream = new FileStream(filename, FileMode.Create))
         using (var writer = new BinaryWriter(fileStream))
         {

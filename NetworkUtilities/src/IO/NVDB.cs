@@ -17,6 +17,7 @@ public static class NVDB
 
     public async static Task<List<Node>> ReadData(string connectionString, int scenario_id)
     {
+        /* TODO: use scenario db */
         var sql = @"
             SELECT ST_AsText(the_geom) AS WKT, id, b_kkod, f_kkod, function_class, network_group 
             FROM road_segment";

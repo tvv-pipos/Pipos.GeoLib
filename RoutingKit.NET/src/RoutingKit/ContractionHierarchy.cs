@@ -27,6 +27,8 @@ public class ContractionHierarchy
     public int[] Order { get => _order; set => _order = value; }
     public Side Forward { get; set; } = new Side();
     public Side Backward { get; set; } = new Side();
+    public int[] Latitude { get; set; }
+    public int[] Longitude { get; set; }
 
     public void ResizeRank(int size)
     {
@@ -52,20 +54,27 @@ public class ContractionHierarchy
     {
         _order = null!;
         _rank = null!;
+        Latitude = null!;
+        Longitude = null!;
     }
 
     public int NodeCount => Rank.Length;
 
     public static ContractionHierarchy Build(
-        int nodeCount, List<int> tail, List<int> head, List<int> weight, 
+        int nodeCount, List<int> tail, List<int> head, List<int> weight, List<int> Latitude, List<int> Longitude,
         Action<string>? logMessage = null, int maxPopCount = DEFAULT_MAX_POP_COUNT)
     {
         Debug.Assert(tail.Count == head.Count);
         Debug.Assert(tail.Count == weight.Count);
         Debug.Assert(tail.Max() < nodeCount);
         Debug.Assert(head.Max() < nodeCount);
+        Debug.Assert(Latitude.Count == nodeCount);
+        Debug.Assert(Longitude.Count == nodeCount);
 
         ContractionHierarchy ch = new ContractionHierarchy();
+        ch.Latitude = Latitude.ToArray();
+        ch.Longitude = Longitude.ToArray();
+
         ContractionHierarchyExtraInfo chExtra = new ContractionHierarchyExtraInfo();
 
         CHH.LogInputGraphStatistics(nodeCount, tail, head, logMessage);

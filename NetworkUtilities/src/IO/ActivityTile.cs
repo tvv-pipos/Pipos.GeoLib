@@ -1,4 +1,8 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
 using Npgsql;
+
 namespace Pipos.Common.NetworkUtilities.IO;
 public static class ActivityTile
 {
@@ -21,7 +25,7 @@ public static class ActivityTile
         return result;
     }
 
-    public async static Task<List<int>> ReadPopulationTilesFromDb(string connectionString, int scenario_id)
+    public async static Task<int[]> ReadPopulationTilesFromDb(string connectionString, int scenario_id)
     {
         var result = new List<int>();
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
@@ -38,6 +42,25 @@ public static class ActivityTile
                 result.Add(tileId);
             }
         }
+        return result.ToArray();
+    }
+
+    public async static Task<List<int>> ReadActivityTileIdFromDb(string connectionString, int scenario_id)
+    {
+        var result = new List<int>();
+        await using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+        await using (var cmd = dataSource.CreateCommand($"SELECT pipos_id FROM scenario{scenario_id}.total_all"))
+
+        await using (var reader = await cmd.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                int tileId = reader.GetInt32(0);
+                result.Add(tileId);
+            }
+        }
         return result;
     }
+
 }

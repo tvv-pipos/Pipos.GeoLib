@@ -31,6 +31,8 @@ public static class ContractionHierarchyIO
             WriteBitArray(writer, ch.Backward.IsShortcutAnOriginalArc);
             WriteVector(writer, ch.Backward.ShortcutFirstArc);
             WriteVector(writer, ch.Backward.ShortcutSecondArc);
+            WriteVector(writer, ch.Latitude);
+            WriteVector(writer, ch.Longitude);
         }
     }
 
@@ -65,6 +67,8 @@ public static class ContractionHierarchyIO
             ch.Backward.IsShortcutAnOriginalArc = ReadBitVector(reader, header.BackwardArcCount);
             ch.Backward.ShortcutFirstArc = ReadArray<int>(reader, header.BackwardArcCount);
             ch.Backward.ShortcutSecondArc = ReadArray<int>(reader, header.BackwardArcCount);
+            ch.Latitude = ReadArray<int>(reader, header.NodeCount);
+            ch.Longitude = ReadArray<int>(reader, header.NodeCount);
 
             return ch;
         }
