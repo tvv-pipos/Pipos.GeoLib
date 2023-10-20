@@ -15,8 +15,8 @@ public static class GraphOptimizer
 
         for (var i = 0; i < activityTiles.Count; i++)
         {
-            var x = XFromId(activityTiles[i]);
-            var y = YFromId(activityTiles[i]);
+            var x = XFromId(activityTiles[i]) + 125;
+            var y = YFromId(activityTiles[i]) + 125;
             var radius = 250;
             var neighbours = _index.Within(x, y, radius);
             while (!neighbours.Any())
