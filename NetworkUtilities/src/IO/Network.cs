@@ -66,7 +66,7 @@ public static class Network
         return graph;
     }
 
-    /*public static async Task<RoutingGraph> LoadOptimizedNVDB(int scenario_id)
+    public static async Task<RoutingGraph> LoadOptimizedNVDB(int scenario_id)
     {
         var connectionString = "Server=pipos.dev.tillvaxtverket.se;database=pipos_master;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
         var connectionStringrut = "Server=pipos.dev.tillvaxtverket.se;database=pip_rutdata;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
@@ -74,9 +74,11 @@ public static class Network
         var nodes = await NVDB.ReadData(connectionString, scenario_id);
 
 
-        var population_tiles = await ActivityTile.ReadPopulationTilesFromDb(connectionStringrut, scenario_id);
+        var activity_tiles = await ActivityTile.ReadPopulationTilesFromDb(connectionStringrut, scenario_id);
+        activity_tiles.AddRange(await TravelReason.ReadTravelReasonTiles(connectionStringrut, scenario_id));
+
         // Pin nodes with population
-        GraphOptimizer.PinActivityTile(nodes, population_tiles);
+        GraphOptimizer.PinActivityTile(nodes, activity_tiles);
         GraphOptimizer.Optimize(nodes);
 
         HashSet<Edge> edges_set = new HashSet<Edge>();
@@ -126,7 +128,7 @@ public static class Network
         graph.FirstOut = InvVecUtils.InvertVector(graph.Tail, graph.Latitude.Count);
 
         return graph;
-    }*/
+    }
 
     public static void WriteToFile(RoutingGraph graph, string filename)
     {

@@ -25,7 +25,7 @@ public static class ActivityTile
         return result;
     }
 
-    public async static Task<int[]> ReadPopulationTilesFromDb(string connectionString, int scenario_id)
+    public async static Task<List<int>> ReadPopulationTilesFromDb(string connectionString, int scenario_id)
     {
         var result = new List<int>();
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
@@ -42,7 +42,7 @@ public static class ActivityTile
                 result.Add(tileId);
             }
         }
-        return result.ToArray();
+        return result;
     }
 
     public async static Task<List<int>> ReadActivityTileIdFromDb(string connectionString, int scenario_id)

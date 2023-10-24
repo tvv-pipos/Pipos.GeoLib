@@ -90,4 +90,26 @@ public static class TravelReason
         }
         return (pipos_id, tr_data);
     }
+
+    public async static Task<List<int>> ReadTravelReasonTiles(string connectionString, int scenario_id)
+    {
+        List<int> pipos_id = new List<int>();
+
+        await using var dataSource = NpgsqlDataSource.Create(connectionString);
+        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM tr_scenario{scenario_id}.tr_total_all"))
+        await using (var dataReader = cmd.ExecuteReader())
+        {
+            while (dataReader != null && dataReader.Read())
+            {
+                for (int i = 0; i < dataReader.FieldCount; i++)
+                {
+                    if (dataReader.GetName(i).Equals("pipos_id"))
+                    {
+                        pipos_id.Add(dataReader.GetInt32(i));
+                    }
+                }
+            }
+        }
+        return pipos_id;
+    }
 }

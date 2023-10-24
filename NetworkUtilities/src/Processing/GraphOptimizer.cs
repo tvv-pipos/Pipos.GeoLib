@@ -21,10 +21,10 @@ public static class GraphOptimizer
             var neighbours = _index.Within(x, y, radius);
             while (!neighbours.Any())
             {
-                if (radius > 5000)
+                /*if (radius > 5000)
                 {
                     break;
-                }
+                }*/
                 radius += 250;
                 neighbours = _index.Within(x, y, radius);
             }
