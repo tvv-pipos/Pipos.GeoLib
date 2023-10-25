@@ -14,9 +14,6 @@ public static class Network
         var connectionStringrut = "Server=pipos.dev.tillvaxtverket.se;database=pip_rutdata;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
 
         var nodes = await NVDB.ReadData(connectionString, scenario_id);
-
-
-        var population_tiles = await ActivityTile.ReadPopulationTilesFromDb(connectionStringrut, scenario_id);      
         HashSet<Edge> edges_set = new HashSet<Edge>();
 
         var graph = new RoutingGraph();
@@ -44,7 +41,7 @@ public static class Network
                 graph.Tail.Add(edge.Source.Idx);
                 graph.Head.Add(edge.Target.Idx);
                 graph.GeoDistance.Add(edge.Distance);
-                graph.TravelTime.Add((int)Math.Round((edge.Distance / (float)edge.ForwardTime) * 3600));
+                graph.TravelTime.Add(edge.ForwardTime);
             }
 
             if (edge.BackwardTime > 0)
@@ -52,7 +49,7 @@ public static class Network
                 graph.Tail.Add(edge.Target.Idx);
                 graph.Head.Add(edge.Source.Idx);
                 graph.GeoDistance.Add(edge.Distance);
-                graph.TravelTime.Add((int)Math.Round((edge.Distance / (float)edge.BackwardTime) * 3600));
+                graph.TravelTime.Add(edge.BackwardTime);
             }
         }
 
@@ -72,7 +69,6 @@ public static class Network
         var connectionStringrut = "Server=pipos.dev.tillvaxtverket.se;database=pip_rutdata;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
 
         var nodes = await NVDB.ReadData(connectionString, scenario_id);
-
 
         var activity_tiles = await ActivityTile.ReadPopulationTilesFromDb(connectionStringrut, scenario_id);
         activity_tiles.AddRange(await TravelReason.ReadTravelReasonTiles(connectionStringrut, scenario_id));
@@ -108,7 +104,7 @@ public static class Network
                 graph.Tail.Add(edge.Source.Idx);
                 graph.Head.Add(edge.Target.Idx);
                 graph.GeoDistance.Add(edge.Distance);
-                graph.TravelTime.Add((int)Math.Round((edge.Distance / (float)edge.ForwardTime) * 3600));
+                graph.TravelTime.Add(edge.ForwardTime);
             }
 
             if (edge.BackwardTime > 0)
@@ -116,7 +112,7 @@ public static class Network
                 graph.Tail.Add(edge.Target.Idx);
                 graph.Head.Add(edge.Source.Idx);
                 graph.GeoDistance.Add(edge.Distance);
-                graph.TravelTime.Add((int)Math.Round((edge.Distance / (float)edge.BackwardTime) * 3600));
+                graph.TravelTime.Add(edge.BackwardTime);
             }
         }
 

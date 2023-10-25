@@ -42,9 +42,14 @@ public static class Parser
                 continue;
             }
             var distance = source.DistanceTo(target);
-            var timeForward = forwardSpeed == 0 ? 0 : (int)Math.Round((distance / (forwardSpeed / 3.6)) * 1000);
-            var timeBackward = backwardSpeed == 0 ? 0 : (int)Math.Round((distance / (backwardSpeed / 3.6)) * 1000);
-            var edge = new Edge(source, target, distance, timeForward, timeBackward);
+            var timeForward = forwardSpeed == 0 ? 0 : (int)Math.Round((float)distance / (float)forwardSpeed * 3600.0);
+            var timeBackward = backwardSpeed == 0 ? 0 : (int)Math.Round((float)distance / (float)backwardSpeed * 3600.0);
+            if (timeForward == 0 && forwardSpeed != 0)
+                timeForward = 1;
+            if (timeForward >= 1000000 && forwardSpeed > 6)
+                timeForward = 1;
+
+                var edge = new Edge(source, target, distance, timeForward, timeBackward);
             source.Edges.Add(edge);
             target.Edges.Add(edge);
             nodes.Add(target);

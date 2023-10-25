@@ -45,12 +45,15 @@ public static class NVDB
                 var functionClass = reader.GetInt32(idx++);
                 var networkGroup = reader.GetInt32(idx++);
 
+                //if (networkGroup == 0)
+                //{
                 var lineString = Parser.ParseLineString(wkt);
                 var nodes = Parser.ParseNodes(lineString, forwardSpeed, backwardSpeed, networkGroup, functionClass);
-                if (nodes.Count > 1) 
+                if (nodes.Count > 1)
                 {
                     MergeNodes(result, nodes);
-                } 
+                }
+                //}
             }
         }
         Console.WriteLine($"Read and build done ({sw.Elapsed})");

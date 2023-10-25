@@ -1,3 +1,5 @@
+namespace Pipos.Common.NetworkUtilities.Processing;
+
 public class MinHeap
 {
     readonly List<ulong> array = new List<ulong>();

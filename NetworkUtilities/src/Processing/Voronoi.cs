@@ -1,5 +1,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Pipos.Common.NetworkUtilities.Model;
+
+namespace Pipos.Common.NetworkUtilities.Processing;
 
 public class Voronoi
 {
