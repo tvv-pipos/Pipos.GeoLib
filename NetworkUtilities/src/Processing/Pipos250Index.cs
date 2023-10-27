@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Pipos.Common.NetworkUtilities.Model;
 
 namespace Pipos.Common.NetworkUtilities.Processing;
@@ -27,7 +28,7 @@ public class Pipos250Index
         _Grid = new List<Coord>[size];
     }
 
-    public void AddPiposId(int piposId)
+    public void Add(int piposId)
     {
         int idx = Grid250.FromId(piposId);
         int x = PiposID.XFromId(piposId) + 125;
@@ -41,36 +42,52 @@ public class Pipos250Index
     public void Add(int x , int y)
     {
         int idx = Grid250.FromCoordinate(x, y);
-        //if (idx >= 0 && idx < _Grid.Length)
-        //{
-            if (_Grid[idx] == null)
-                _Grid[idx] = new List<Coord>();
-            _Grid[idx].Add(new Coord { id = _Next++, x = x, y = y });
-        //}
+        Debug.Assert(idx >= 0 && idx < _Grid.Length);
+        if (_Grid[idx] == null)
+            _Grid[idx] = new List<Coord>();
+        _Grid[idx].Add(new Coord { id = _Next++, x = x, y = y });
     }
 
-    public void Finish()
+    /*public int FindWithin(int[] idx, int piposId, int radius)
     {
-        for(int i = 0; i < _Grid.Length; i++)
-        {
-            if (_Grid[i] != null)
-            {
-                _Grid[i].Sort(CompareCoord);
-            }
-        }
-    }
+        int idx = Grid250.FromId(piposId);
+        int x = Grid250.XFromId(piposId);
+        int y = Grid250.YFromId(piposId);
+        return FindNearest(idx, x, y);
+    }*/
 
     public int FindNearest(int piposId)
     {
         int idx = Grid250.FromId(piposId);
-        if (_Grid[idx] != null)
-            return _Grid[idx][0].id;
+        int x = Grid250.XFromId(piposId);
+        int y = Grid250.YFromId(piposId);
+        return FindNearest(idx, x, y);
+    }
 
+    public int FindNearest(int x, int y)
+    {
+        int idx = Grid250.FromCoordinate(x, y);
+        return FindNearest(idx, x, y);
+    }
+
+    private int FindNearest(int idx, int x, int y)
+    {
         int id = Int32.MaxValue;
         int sq_dist = Int32.MaxValue;
 
-        int x = Grid250.XFromId(piposId);
-        int y = Grid250.YFromId(piposId);
+        if (_Grid[idx] != null)
+        {
+            foreach (Coord coord in _Grid[idx])
+            {
+                int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
+                if (sq < sq_dist)
+                {
+                    sq_dist = sq;
+                    id = coord.id;
+                }
+            }
+            return id;
+        }
 
         int x1 = x - 1;
         int y1 = y - 1;
@@ -91,7 +108,15 @@ public class Pipos250Index
                     idx = sx + y1 * Grid250.Width;
                     if (_Grid[idx] != null)
                     {
-                        FindNearestInTile(x, y, idx, ref id , ref sq_dist);
+                        foreach (Coord coord in _Grid[idx])
+                        {
+                            int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
+                            if (sq < sq_dist)
+                            {
+                                sq_dist = sq;
+                                id = coord.id;
+                            }
+                        }
                     }
                 }
             }
@@ -107,7 +132,15 @@ public class Pipos250Index
                     idx = x2 + sy * Grid250.Width;
                     if (_Grid[idx] != null)
                     {
-                        FindNearestInTile(x, y, idx, ref id, ref sq_dist);
+                        foreach (Coord coord in _Grid[idx])
+                        {
+                            int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
+                            if (sq < sq_dist)
+                            {
+                                sq_dist = sq;
+                                id = coord.id;
+                            }
+                        }
                     }
                 }
             }
@@ -123,7 +156,15 @@ public class Pipos250Index
                     idx = sx + y2 * Grid250.Width;
                     if (_Grid[idx] != null)
                     {
-                        FindNearestInTile(x, y, idx, ref id, ref sq_dist);
+                        foreach (Coord coord in _Grid[idx])
+                        {
+                            int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
+                            if (sq < sq_dist)
+                            {
+                                sq_dist = sq;
+                                id = coord.id;
+                            }
+                        }
                     }
                 }
             }
@@ -139,7 +180,15 @@ public class Pipos250Index
                     idx = x1 + sy * Grid250.Width;
                     if (_Grid[idx] != null)
                     {
-                        FindNearestInTile(x, y, idx, ref id, ref sq_dist);
+                        foreach (Coord coord in _Grid[idx])
+                        {
+                            int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
+                            if (sq < sq_dist)
+                            {
+                                sq_dist = sq;
+                                id = coord.id;
+                            }
+                        }
                     }
                 }
             }
@@ -153,19 +202,6 @@ public class Pipos250Index
             y2 = y2 + 1;
         }
         return id;
-    }   
-
-    private void FindNearestInTile(int x,  int y, int idx, ref int id, ref int sq_dist)
-    {
-        foreach(Coord coord in _Grid[idx])
-        {
-            int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
-            if(sq < sq_dist)
-            {
-                sq_dist = sq;
-                id = coord.id;
-            }
-        }
     }
 
 }
