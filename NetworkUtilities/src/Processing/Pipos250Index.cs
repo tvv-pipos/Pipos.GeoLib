@@ -11,7 +11,7 @@ public class Pipos250Index
     private int _Next = 0;
     private List<Coord>[] _Grid;
 
-    private int CompareCoord(Coord a, Coord b)
+    /*private int CompareCoord(Coord a, Coord b)
     {
         int a_cx = ((a.x / 250) * 250) + 125;
         int a_cy = ((a.y / 250) * 250) + 125;
@@ -20,7 +20,7 @@ public class Pipos250Index
         int ac2 = (a.x - a_cx) * (a.x - a_cx) + (a.y - a_cy) * (a.y - a_cy);
         int bc2 = (b.x - b_cx) * (b.x - b_cx) + (b.y - b_cy) * (b.y - b_cy);
         return ac2.CompareTo(bc2);
-    }
+    }*/
 
     public Pipos250Index()
 	{
@@ -48,14 +48,6 @@ public class Pipos250Index
         _Grid[idx].Add(new Coord { id = _Next++, x = x, y = y });
     }
 
-    /*public int FindWithin(int[] idx, int piposId, int radius)
-    {
-        int idx = Grid250.FromId(piposId);
-        int x = Grid250.XFromId(piposId);
-        int y = Grid250.YFromId(piposId);
-        return FindNearest(idx, x, y);
-    }*/
-
     public int FindNearest(int piposId)
     {
         int idx = Grid250.FromId(piposId);
@@ -70,7 +62,7 @@ public class Pipos250Index
         return FindNearest(idx, x, y);
     }
 
-    private int FindNearest(int idx, int x, int y)
+    public int FindNearest(int idx, int x, int y)
     {
         int id = Int32.MaxValue;
         int sq_dist = Int32.MaxValue;
@@ -80,7 +72,7 @@ public class Pipos250Index
             foreach (Coord coord in _Grid[idx])
             {
                 int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
-                if (sq < sq_dist)
+                if (sq < sq_dist || (sq == sq_dist && id > coord.id))
                 {
                     sq_dist = sq;
                     id = coord.id;
@@ -95,7 +87,7 @@ public class Pipos250Index
         int y2 = y + 1;
 
         // TODO: Check if Width should be less egual 
-        while(x1 >= 0 && x2 < Grid250.Width && y1 >= 0 && y2 < Grid250.Height)
+        while(x1 >= 0 || x2 < Grid250.Width || y1 >= 0 || y2 < Grid250.Height)
         {
             if(y1 >= 0)
             {
@@ -111,7 +103,7 @@ public class Pipos250Index
                         foreach (Coord coord in _Grid[idx])
                         {
                             int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
-                            if (sq < sq_dist)
+                            if (sq < sq_dist || (sq == sq_dist && id > coord.id))
                             {
                                 sq_dist = sq;
                                 id = coord.id;
@@ -135,7 +127,7 @@ public class Pipos250Index
                         foreach (Coord coord in _Grid[idx])
                         {
                             int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
-                            if (sq < sq_dist)
+                            if (sq < sq_dist || (sq == sq_dist && id > coord.id))
                             {
                                 sq_dist = sq;
                                 id = coord.id;
@@ -159,7 +151,7 @@ public class Pipos250Index
                         foreach (Coord coord in _Grid[idx])
                         {
                             int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
-                            if (sq < sq_dist)
+                            if (sq < sq_dist || (sq == sq_dist && id > coord.id))
                             {
                                 sq_dist = sq;
                                 id = coord.id;
@@ -183,7 +175,7 @@ public class Pipos250Index
                         foreach (Coord coord in _Grid[idx])
                         {
                             int sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
-                            if (sq < sq_dist)
+                            if (sq < sq_dist || (sq == sq_dist && id > coord.id))
                             {
                                 sq_dist = sq;
                                 id = coord.id;

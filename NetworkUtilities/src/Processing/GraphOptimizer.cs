@@ -1,39 +1,23 @@
 using RoutingKit;
 using Pipos.Common.NetworkUtilities.Processing;
 using static Pipos.Common.NetworkUtilities.Model.PiposID;
+using System.Diagnostics;
 
 public static class GraphOptimizer
 {
     public static void PinActivityTile(List<Node> nodes, List<int> activityTiles)
     {
-        KDIndex _index = new KDIndex(nodes.Count);
+        Pipos250Index _index = new Pipos250Index();
         for (var i = 0; i < nodes.Count; i++)
         {
             _index.Add(nodes[i].X, nodes[i].Y);
         }
-        _index.Finish();
+        //_index.Finish();
 
         for (var i = 0; i < activityTiles.Count; i++)
         {
-            var x = XFromId(activityTiles[i]) + 125;
-            var y = YFromId(activityTiles[i]) + 125;
-            var radius = 250;
-            var neighbours = _index.Within(x, y, radius);
-            while (!neighbours.Any())
-            {
-                /*if (radius > 5000)
-                {
-                    break;
-                }*/
-                radius += 250;
-                neighbours = _index.Within(x, y, radius);
-            }
-
-            if (neighbours.Any())
-            {
-                var node_idx = neighbours.OrderBy(idx => SquareDist(nodes[idx].X, nodes[idx].Y, x, y)).First();
-                nodes[node_idx].Pinned = true;
-            }
+            var node_idx = _index.FindNearest(activityTiles[i]);
+            nodes[node_idx].Pinned = true;
         }
     }
     public static void Optimize(List<Node> nodes)
@@ -90,7 +74,6 @@ public static class GraphOptimizer
                     }
 
                     leftEdge.Distance += rightEdge.Distance;
-
                     leftEdge.SetForwardTime(leftNode, lf + rf);
                     leftEdge.SetBackwardTime(leftNode, lb + rb);
 
@@ -108,8 +91,10 @@ public static class GraphOptimizer
                     rightEdge.Source = null!;
                     rightEdge.Target = null!;
 
+                    /* TODO: Find other edge */
                     if (rightNode.Edges.Any(x => x.GetOtherNode(rightNode) == leftNode))
                     {
+                         // Remove other edge
                          leftNode.Edges.Remove(leftEdge);
                          leftEdge.Source = null!;
                          leftEdge.Target = null!;
@@ -131,6 +116,147 @@ public static class GraphOptimizer
         nodes.Clear();
         nodes.AddRange(result);
     }
+
+    public static void OptimizeNetwork(List<Node> nodes)
+    {
+        int c = 1;
+        while (c > 0)
+        {
+            c = 0;
+            foreach (var node in nodes)
+            {
+                if (node.NodeType == NodeType.Connection || node.Pinned)
+                {
+                    continue;
+                }
+
+                bool rl = false;
+                if (node.Edges.Count() == 1)
+                {
+                    Edge l1 = node.Edges[0];
+                    Node n1 = l1.GetOtherNode(node);
+                    node.Edges.Clear(); 
+
+                    rl = false;
+                    for (int l = 0; l < n1.Edges.Count(); l++)
+                    {
+                        if (n1.Edges[l] == l1)
+                        {
+                            n1.Edges.Remove(n1.Edges[l]);
+                            rl = true;
+                            c++;
+                            break;
+                        }
+                    }
+                    Debug.Assert(rl);
+                }
+                else if (node.Edges.Count() == 2)
+                {
+                    Edge l1 = node.Edges[0];
+                    Edge l2 = node.Edges[1];
+                    Node n1 = l1.GetOtherNode(node);
+                    Node n2 = l2.GetOtherNode(node);
+                    if (n1 == n2)
+                    {
+                        c++;
+                        node.Edges.Clear();
+                        rl = false;
+                        n1.Edges.Remove(l1);
+                        n2.Edges.Remove(l2);
+                    }
+                    else if (l1.Source == node && l2.Target == node && l1.ForwardSpeed == l2.ForwardSpeed && l1.BackwardSpeed == l2.BackwardSpeed)
+                    {
+                        c++;
+                        rl = false;
+                        for (int l = 0; l < n1.Edges.Count(); l++)
+                        {
+                            if (n1.Edges[l] == l1)
+                            {
+                                n1.Edges[l] = l2;
+                                rl = true;
+                                break;
+                            }
+                        }
+                        Debug.Assert(rl);
+                        l1.Source = l2.Source;
+                        l2.Target = l1.Target;
+                        l2.Distance = l1.Distance + l2.Distance;
+                        l2.ForwardTime = l1.ForwardTime + l2.ForwardTime;
+                        l2.BackwardTime = l1.BackwardTime + l2.BackwardTime;
+                        node.Edges.Clear();
+                    }
+                    else if (l1.Source == node && l2.Source == node && l1.ForwardSpeed == l2.BackwardSpeed && l1.BackwardSpeed == l2.ForwardSpeed)
+                    {
+                        c++;
+                        rl = false;
+                        for (int l = 0; l < n1.Edges.Count(); l++)
+                        {
+                            if (n1.Edges[l] == l1)
+                            {
+                                n1.Edges[l] = l2;
+                                rl = true;
+                                break;
+                            }
+                        }
+                        Debug.Assert(rl);
+                        l1.Source = l2.Target;
+                        l2.Source = l1.Target;
+                        l2.Distance = l1.Distance + l2.Distance;
+                        l2.ForwardTime = l1.ForwardTime + l2.ForwardTime;
+                        l2.BackwardTime = l1.BackwardTime + l2.BackwardTime;
+                        node.Edges.Clear();
+                    }
+                    else if (l1.Target == node && l2.Target == node && l1.ForwardSpeed == l2.BackwardSpeed && l1.BackwardSpeed== l2.ForwardSpeed)
+                    {
+                        c++;
+                        rl = false;
+                        for (int l = 0; l < n1.Edges.Count(); l++)
+                        {
+                            if (n1.Edges[l] == l1)
+                            {
+                                n1.Edges[l] = l2;
+                                rl = true;
+                                break;
+                            }
+                        }
+                        Debug.Assert(rl);
+                        l1.Target = l2.Source;
+                        l2.Target = l1.Source;
+                        l2.Distance = l1.Distance + l2.Distance;
+                        l2.ForwardTime = l1.ForwardTime + l2.ForwardTime;
+                        l2.BackwardTime = l1.BackwardTime + l2.BackwardTime;
+                        node.Edges.Clear();
+                    }
+                    else if (l1.Target == node && l2.Source == node && l1.ForwardSpeed == l2.ForwardSpeed && l1.BackwardSpeed == l2.BackwardSpeed)
+                    {
+                        c++;
+                        rl = false;
+                        for (int l = 0; l < n1.Edges.Count(); l++)
+                        {
+                            if (n1.Edges[l] == l1)
+                            {
+                                n1.Edges[l] = l2;
+                                rl = true;
+                                break;
+                            }
+                        }
+                        Debug.Assert(rl);
+                        l1.Target = l2.Target;
+                        l2.Source = l1.Source;
+                        l2.Distance = l1.Distance + l2.Distance;
+                        l2.ForwardTime = l1.ForwardTime + l2.ForwardTime;
+                        l2.BackwardTime = l1.BackwardTime + l2.BackwardTime;
+                        node.Edges.Clear();
+                    }
+                }
+            }
+            Console.WriteLine($"Nodes eliminated = {c}\n");
+        }
+        var result = nodes.Where(n => n.Edges.Count > 0).ToArray();
+        nodes.Clear();
+        nodes.AddRange(result);
+    }
+
 
     public static (int[] nodes, List<int> edges, List<int> weights) BuildAdjacencyLists(List<Node> graph)
     {

@@ -45,15 +45,16 @@ public static class NVDB
                 var functionClass = reader.GetInt32(idx++);
                 var networkGroup = reader.GetInt32(idx++);
 
-                //if (networkGroup == 0)
-                //{
-                var lineString = Parser.ParseLineString(wkt);
-                var nodes = Parser.ParseNodes(lineString, forwardSpeed, backwardSpeed, networkGroup, functionClass);
-                if (nodes.Count > 1)
+                // TODO: Only connect to right group
+                if (networkGroup == 0)
                 {
-                    MergeNodes(result, nodes);
+                    var lineString = Parser.ParseLineString(wkt);
+                    var nodes = Parser.ParseNodes(lineString, forwardSpeed, backwardSpeed, networkGroup, functionClass);
+                    if (nodes.Count > 1)
+                    {
+                        MergeNodes(result, nodes);
+                    }
                 }
-                //}
             }
         }
         Console.WriteLine($"Read and build done ({sw.Elapsed})");
@@ -87,50 +88,6 @@ public static class NVDB
         double dy = y - node.Y;
         return Math.Sqrt(dx * dx + dy * dy);
     }
-
-    // public static void ConnectTiles(List<Node> nodes)
-    // {
-    //     var connections = new Dictionary<int, NVDB.Connector>();
-    //     foreach (var node in nodes)
-    //     {
-    //         ConnectTile(node, connections);
-    //     }
-
-    //     foreach (var item in connections)
-    //     {
-    //         var (x, y) = ToCoordinates(item.Key);
-    //         var connectionNode = new Node(x, y, NodeType.Connection);
-    //         if (connectionNode.Id == item.Value.Node.Id)
-    //         {
-    //             //Det finns redan en punkt i vägnätet med samma koordinate
-    //             continue;
-    //         }
-    //         var distance = (int)Math.Round(item.Value.Distance);
-    //         var time = (int)Math.Round((distance / (40 / 3.6)) * 1000); 
-    //         var edge = new Edge(connectionNode, item.Value.Node, distance, time);
-    //         connectionNode.Edges.Add(edge);
-    //         item.Value.Node.Edges.Add(edge);
-    //         nodes.Add(connectionNode);
-    //     }
-    // }
-
-    // static void ConnectTile(Node node, Dictionary<int, Connector> connections)
-    // {
-    //     var tileId = ToTileId(node);
-    //     Connector? connector;
-    //     if (!connections.TryGetValue(tileId, out connector))
-    //     {
-    //         connector = new Connector(Distance(tileId, node), node);
-    //         connections[tileId] = connector;
-    //         return;
-    //     }
-    //     var distance = Distance(tileId, node);
-    //     if (distance < connector.Distance)
-    //     {
-    //         connector.Distance = distance;
-    //         connector.Node = node;
-    //     }
-    // }
 
     private static void MergeNodes(Dictionary<long, Node> result, List<Node> nodes)
     {
@@ -183,5 +140,137 @@ public static class NVDB
         }
         result.Add(currentStr.ToString());
         return result;
+    }
+
+
+    public async static Task<List<Node>> LoadNetwork(string connectionString, int scenario_id)
+    {
+        List<Node> nodes = new List<Node>();
+        await LoadRoadData(nodes, connectionString, scenario_id);
+        await LineSweep(nodes);
+        return nodes;
+    }
+
+    private async static Task LoadRoadData(List<Node> nodes, string connectionString, int scenario_id)
+    {
+        var sql = @"
+            SELECT ST_AsText(the_geom) AS WKT, id, b_kkod, f_kkod, function_class, network_group 
+            FROM road_segment";
+
+        Console.WriteLine($"Read and build graph...");
+        var sw = Stopwatch.StartNew();
+        var result = new Dictionary<long, Node>();
+
+        await using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+        await using (var cmd = dataSource.CreateCommand(sql))
+        await using (var reader = await cmd.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                Node? last_point = null;
+                int x = 0, y = 0, x2 = 0, y2 = 0;
+
+                var idx = 0;
+                var wkt = reader.GetString(idx++);
+                var id = reader.GetInt64(idx++);
+                var backwardSpeed = reader.GetInt32(idx++);
+                var forwardSpeed = reader.GetInt32(idx++);
+                var functionClass = reader.GetInt32(idx++);
+                var networkGroup = reader.GetInt32(idx++);
+
+                // TODO: Only connect to right group
+                if (networkGroup == 0)
+                {
+                    var lineString = Parser.ParseLineString(wkt);
+                    for(int i = 0; i < lineString.Length; i++)
+                    {
+                        x = lineString[i][0];
+                        y = lineString[i][1];
+
+                        Node point = new Node {
+                            Idx = nodes.Count(),
+                            X = x,
+                            Y = y,
+                            FunctionClass = functionClass,
+                            NetworkGroup = networkGroup
+                        };
+
+                        if (last_point != null)
+                        {
+                            if (last_point.Id == point.Id)
+                            {
+                                continue;
+                            }
+
+                            int dx = x2 - x;
+                            int dy = y2 - y;
+
+                            int distance = (int)Math.Round(Math.Sqrt(dx * dx + dy * dy));
+
+                            Edge edge = new Edge
+                            {
+                                Source = last_point,
+                                Target = point,
+                                Distance = distance,
+                                ForwardSpeed = forwardSpeed,
+                                BackwardSpeed = backwardSpeed,
+                                ForwardTime = forwardSpeed == 0 ? 0 : (int)Math.Round((float)distance / (float)forwardSpeed * 3600.0f),
+                                BackwardTime = backwardSpeed == 0 ? 0 : (int)Math.Round((float)distance / (float)backwardSpeed * 3600.0f)
+                            };
+
+                            last_point.Edges.Add(edge);
+                            point.Edges.Add(edge);
+                        }
+                        nodes.Add(point);
+                        last_point = point;
+                        x2 = x;
+                        y2 = y;
+                    }
+                }
+            }
+        }
+        Console.WriteLine($"Read and build done ({sw.Elapsed})");
+    }
+
+    private async static Task LineSweep(List<Node> nodes)
+    {
+        List<Node> connected_nodes = new List<Node>();
+        nodes.Sort(delegate (Node n1, Node n2)
+        {
+            if (n1.Y == n2.Y)
+                return n1.X.CompareTo(n2.X);
+            return n1.Y.CompareTo(n2.Y);
+        });
+
+        Node? last_node = null;
+
+        foreach (Node node in nodes)
+        {
+            if (last_node != null
+                && node.Y == last_node.Y
+                && node.X == last_node.X)
+            {
+                foreach (Edge edge in node.Edges)
+                {
+                    last_node.Edges.Add(edge);
+                    if (edge.Source.Idx == node.Idx)
+                        edge.Source = last_node;
+                    else if (edge.Target.Idx == node.Idx)
+                        edge.Target = last_node;
+                    else
+                        Debug.Assert(false);
+                }
+                node.Edges.Clear();
+            }
+            else
+            {
+                connected_nodes.Add(node);
+                last_node = node;
+            }
+        }
+        //var result = nodes.Where(n => n.Edges.Count > 0).ToArray();
+        nodes.Clear();
+        nodes.AddRange(connected_nodes.ToArray());
     }
 }

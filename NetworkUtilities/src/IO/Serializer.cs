@@ -33,6 +33,8 @@ public static class Serializer
                 writer.Write(edge.Source.Id);
                 writer.Write(edge.Target.Id);
                 writer.Write(edge.Distance);
+                writer.Write(edge.ForwardSpeed);
+                writer.Write(edge.BackwardSpeed);
                 writer.Write(edge.ForwardTime);
                 writer.Write(edge.BackwardTime);
                 writer.Write(edge.IsConnectionEdge);
@@ -70,7 +72,9 @@ public static class Serializer
                 var edge = new Edge(
                     source: nodeDict[reader.ReadInt64()], 
                     target: nodeDict[reader.ReadInt64()], 
-                    distance: reader.ReadInt32(), 
+                    distance: reader.ReadInt32(),
+                    speedForward: reader.ReadInt32(),
+                    speedBackward: reader.ReadInt32(),
                     timeForward: reader.ReadInt32(), 
                     timeBackward: reader.ReadInt32(), 
                     connectionEdge: reader.ReadBoolean());

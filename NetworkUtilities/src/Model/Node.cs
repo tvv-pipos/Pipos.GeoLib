@@ -26,11 +26,18 @@ public class Node
         Pinned = false;
     }
 
+    public Node()
+    {
+        NodeType = NodeType.Default;
+        Edges = new List<Edge>();
+        Pinned = false;
+    }
+
     public long Id => (0xFFFFFFFF & Y) << 32 | (0xFFFFFFFF & X);
     public int Index { get; set; }
     public int Idx { get; set; }
-    public int X { get; }
-    public int Y { get; }
+    public int X { get; set; }
+    public int Y { get; set; }
     public int FunctionClass { get; set; }
     public int NetworkGroup { get; set; }
     public bool Pinned { get; set; }

@@ -1,17 +1,26 @@
 public class Edge
 {
-    public Edge(Node source, Node target, int distance, int timeForward, int timeBackward, bool connectionEdge = false)
+    public Edge(Node source, Node target, int distance, int speedForward, int speedBackward, int timeForward, int timeBackward, bool connectionEdge = false)
     {
         Source = source;
         Target = target;
         Distance = distance;
+        ForwardSpeed = speedForward;
+        BackwardSpeed = speedBackward;
         ForwardTime = timeForward;
         BackwardTime = timeBackward;
         IsConnectionEdge = connectionEdge;
     }
+    public Edge()
+    {
+        IsConnectionEdge = false;
+    }
+
     public Node Source { get; set; }
     public Node Target { get; set; }
     public int Distance { get; set; }
+    public int ForwardSpeed { get; set; }
+    public int BackwardSpeed { get; set; }
     public int ForwardTime { get; set; }
     public int BackwardTime { get; set; }
     public bool IsConnectionEdge { get; set; }
