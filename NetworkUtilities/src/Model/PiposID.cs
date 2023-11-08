@@ -17,6 +17,10 @@ public static class PiposID
     {
         return ((id >> 16)) * 250;
     }
+    public static Int32 IdFromXY(Int32 x, Int32 y)
+    {
+        return ((0xFFFF & (y / 250)) << 16) | (0xFFFF & (x / 250));
+    }
     public static int XFromRutID(long RutID)
     {
         return (int)(RutID / 10000000);

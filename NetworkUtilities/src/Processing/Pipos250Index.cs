@@ -28,6 +28,13 @@ public class Pipos250Index
         _Grid = new List<Coord>[size];
     }
 
+    public bool InRange(int piposId)
+    {
+        int x = PiposID.XFromId(piposId) + 125;
+        int y = PiposID.YFromId(piposId) + 125;
+        return Sweden.XMin < x && x < Sweden.XMax && Sweden.YMin < y && y < Sweden.YMax;
+    }
+
     public void Add(int piposId)
     {
         int idx = Grid250.FromId(piposId);

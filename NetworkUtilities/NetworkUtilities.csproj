@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="8.0.0-preview.4" />
     <ProjectReference Include="../RoutingKit.NET/src/RoutingKit/RoutingKit.csproj" />
+    <PackageReference Include="ProjNet" Version="2.0.0" />
   </ItemGroup>
 
 </Project>
