@@ -13,11 +13,11 @@ public static class PiposPath
     {
         if (storage == Storage.File)
         {
-            return $@"{sceanrio_id}/index/{transportmodel}";
+            return $"{sceanrio_id}/index/{transportmodel}";
         } 
         else if(storage == Storage.Database)
         {
-            return "";
+            return $"sceanrio{sceanrio_id}_index.{transportmodel}";
         }
         return "";
     }
@@ -25,11 +25,11 @@ public static class PiposPath
     {
         if (storage == Storage.File)
         {
-            return $@"{sceanrio_id}/logsum/{travelreason}_{transportmodel}";
+            return $"{sceanrio_id}/logsum/{travelreason}_{transportmodel}";
         }
         else if (storage == Storage.Database)
         {
-            return "";
+            return $"sceanrio{sceanrio_id}_logsum.{transportmodel}"; ;
         }
         return "";
     }
@@ -38,7 +38,7 @@ public static class PiposPath
     {
         if (storage == Storage.File)
         {
-            return $@"{sceanrio_id}/network/{transportmodel}";
+            return $"{sceanrio_id}/network/{transportmodel}";
         }
         else if (storage == Storage.Database)
         {
