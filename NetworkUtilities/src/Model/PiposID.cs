@@ -1,4 +1,7 @@
-﻿namespace Pipos.Common.NetworkUtilities.Model;
+﻿using NetTopologySuite.Geometries;
+
+namespace Pipos.Common.NetworkUtilities.Model;
+
 public static class PiposID
 {
     public static Int32 IdFromRutID(Int64 RutID)
@@ -20,6 +23,20 @@ public static class PiposID
     public static Int32 IdFromXY(Int32 x, Int32 y)
     {
         return ((0xFFFF & (y / 250)) << 16) | (0xFFFF & (x / 250));
+    }
+    public static NetTopologySuite.Geometries.Polygon PolygonFromId(int id)
+    {
+        int x = (0xFFFF & id) * 250;
+        int y = ((id >> 16)) * 250;
+        return new NetTopologySuite.Geometries.Polygon(
+        new LinearRing(new Coordinate[]
+        {
+            new Coordinate(x,       y      ),
+            new Coordinate(x + 250, y      ),
+            new Coordinate(x + 250, y + 250),
+            new Coordinate(x,       y + 250),
+            new Coordinate(x,       y      )
+        }));
     }
     public static int XFromRutID(long RutID)
     {

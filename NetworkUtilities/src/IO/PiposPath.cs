@@ -1,4 +1,7 @@
 using Npgsql;
+using Pipos.Common.NetworkUtilities.Model;
+using System.ComponentModel;
+
 namespace Pipos.Common.NetworkUtilities.IO;
 
 public static class PiposPath
@@ -9,41 +12,38 @@ public static class PiposPath
         Database
     }
 
-    public static string GetIndex(int sceanrio_id, string transportmodel, Storage storage)
+    public static (string, string) GetIndex(int sceanrio_id, string transportmodel, Storage storage)
     {
         if (storage == Storage.File)
         {
-            return $"{sceanrio_id}/index/{transportmodel}";
+            return ($"{Settings.PiposDataSharePath}/{sceanrio_id}/index", $"{transportmodel}");
         } 
-        else if(storage == Storage.Database)
+        else// if(storage == Storage.Database)
         {
-            return $"sceanrio{sceanrio_id}_index.{transportmodel}";
+            return ($"sceanrio{sceanrio_id}_index", $"{transportmodel}");
         }
-        return "";
     }
-    public static string GetLogsum(int sceanrio_id, string travelreason, string transportmodel, Storage storage)
+    public static (string, string) GetLogsum(int sceanrio_id, string travelreason, string transportmodel, Storage storage)
     {
         if (storage == Storage.File)
         {
-            return $"{sceanrio_id}/logsum/{travelreason}_{transportmodel}";
+            return ($"{Settings.PiposDataSharePath}/{sceanrio_id}/logsum", $"{transportmodel}");
         }
-        else if (storage == Storage.Database)
+        else// if (storage == Storage.Database)
         {
-            return $"sceanrio{sceanrio_id}_logsum.{transportmodel}"; ;
+            return ($"sceanrio{sceanrio_id}_logsum", $"{transportmodel}"); ;
         }
-        return "";
     }
 
-    public static string GetNetwork(int sceanrio_id, string transportmodel, Storage storage)
+    public static (string, string) GetNetwork(int sceanrio_id, string transportmodel, Storage storage)
     {
         if (storage == Storage.File)
         {
-            return $"{sceanrio_id}/network/{transportmodel}";
+            return ($"{Settings.PiposDataSharePath}/{sceanrio_id}/network", $"{transportmodel}");
         }
-        else if (storage == Storage.Database)
+        else// if (storage == Storage.Database)
         {
-            return "";
+            return ("", "");
         }
-        return "";
     }
 }

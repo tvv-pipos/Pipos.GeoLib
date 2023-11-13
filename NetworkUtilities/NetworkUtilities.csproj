@@ -7,9 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="8.0.0-preview.4" />
-    <ProjectReference Include="../RoutingKit.NET/src/RoutingKit/RoutingKit.csproj" />
+    <PackageReference Include="Npgsql" Version="7.0.6" />
+    <PackageReference Include="NetTopologySuite" Version="2.5.0" />
+	<PackageReference Include="Npgsql.NetTopologySuite" Version="7.0.6" />
     <PackageReference Include="ProjNet" Version="2.0.0" />
+    <ProjectReference Include="../RoutingKit.NET/src/RoutingKit/RoutingKit.csproj" />
   </ItemGroup>
 
 </Project>
