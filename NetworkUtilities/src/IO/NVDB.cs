@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using Npgsql;
+using Pipos.Common.NetworkUtilities.Model;
 
 namespace Pipos.Common.NetworkUtilities.IO;
 
@@ -147,7 +148,7 @@ public static class NVDB
     {
         List<Node> nodes = new List<Node>();
         await LoadRoadData(nodes, connectionString, scenario_id);
-        await LineSweep(nodes);
+        LineSweep(nodes);
         return nodes;
     }
 
@@ -233,7 +234,7 @@ public static class NVDB
         Console.WriteLine($"Read and build done ({sw.Elapsed})");
     }
 
-    private async static Task LineSweep(List<Node> nodes)
+    private static void LineSweep(List<Node> nodes)
     {
         List<Node> connected_nodes = new List<Node>();
         nodes.Sort(delegate (Node n1, Node n2)

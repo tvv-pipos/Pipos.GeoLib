@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Buffers;
 using Microsoft.Extensions.Logging;
 using Pipos.Common.NetworkUtilities.Model;
 
@@ -7,6 +8,8 @@ namespace Pipos.Common.NetworkUtilities.Processing;
 public class Voronoi
 {
     readonly ILogger<Voronoi> _logger;
+    readonly ArrayPool<int> _arrayPool = ArrayPool<int>.Shared;
+
     public Voronoi(ILogger<Voronoi> logger)
     {
         _logger = logger;
@@ -128,5 +131,65 @@ public class Voronoi
 
         _logger.LogInformation($"Counter: {counter}, Elapsed: {sw.Elapsed}");
         return (null, 0);
+    }
+
+    public (List<Node> nearestNeightbours, List<int> distances) 
+    FindDistances(List<Node> network, Node startNode, List<Node> targetNodes, 
+        SearchMode mode, int? maxSearchDistance)
+    {
+        maxSearchDistance = maxSearchDistance ?? int.MaxValue;
+        var counter = 0;
+        var hashSet = targetNodes.ToHashSet();
+
+        var distances = _arrayPool.Rent(network.Count);
+        var queue = new MinHeap();
+
+        distances[startNode.Index] = 1;
+        queue.Add((uint)startNode.Index, 1);
+
+        var nearestNeightbours = new List<Node>();
+        var shortestDistances = new List<int>();
+
+        while (!queue.IsEmpty && nearestNeightbours.Count < targetNodes.Count)
+        {
+            var index = queue.RemoveMin();
+            var currentNode = network[(int)index];
+
+            if (hashSet.Contains(currentNode) && currentNode != startNode)
+            {
+                nearestNeightbours.Add(currentNode);
+                shortestDistances.Add(distances[currentNode.Index]);
+            }
+
+            foreach (var edge in currentNode.Edges)
+            {
+                var target = edge.GetOtherNode(currentNode);
+                var time = edge.GetForwardTime(currentNode);
+
+                if (time == 0) // enkelriktad
+                {
+                    continue;
+                }
+
+                var weight = distances[currentNode.Index] + (
+                    mode == SearchMode.Shortest ?
+                        edge.Distance :
+                        time
+                );
+
+                if ((distances[target.Index] == 0 || distances[target.Index] > weight) && weight < maxSearchDistance)
+                {
+                    //if (target.NodeType != NodeType.Default || !edge.IsConnectionEdge)
+                    {
+                        counter++;
+                        distances[target.Index] = weight;
+                        queue.Add((uint)target.Index, (uint)weight);
+                    }
+                }
+            }
+        }
+
+        _arrayPool.Return(distances, true);
+        return (nearestNeightbours, shortestDistances);
     }
 }

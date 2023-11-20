@@ -1,3 +1,5 @@
+using Pipos.Common.NetworkUtilities.Model;
+
 namespace Pipos.Common.NetworkUtilities.IO;
 
 public static class Parser

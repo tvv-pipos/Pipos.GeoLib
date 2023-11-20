@@ -1,3 +1,5 @@
+namespace Pipos.Common.NetworkUtilities.Model;
+
 public class Edge
 {
     public Edge(Node source, Node target, int distance, int speedForward, int speedBackward, int timeForward, int timeBackward, bool connectionEdge = false)
@@ -14,6 +16,8 @@ public class Edge
     public Edge()
     {
         IsConnectionEdge = false;
+        Source = null!;
+        Target = null!;
     }
 
     public Node Source { get; set; }

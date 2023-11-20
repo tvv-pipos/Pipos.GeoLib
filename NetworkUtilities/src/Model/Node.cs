@@ -1,3 +1,5 @@
+namespace Pipos.Common.NetworkUtilities.Model;
+
 public enum NodeType : ushort
 {
     Connection,

@@ -1,7 +1,5 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
 using Npgsql;
+using Pipos.Common.NetworkUtilities.Model;
 
 namespace Pipos.Common.NetworkUtilities.IO;
 public static class ActivityTile

@@ -1,4 +1,5 @@
 using System.Text;
+using Pipos.Common.NetworkUtilities.Model;
 
 namespace Pipos.Common.NetworkUtilities.IO;
 

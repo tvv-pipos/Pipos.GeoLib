@@ -1,5 +1,4 @@
 using RoutingKit;
-using System.Linq;
 using Pipos.Common.NetworkUtilities.Model;
 using Pipos.Common.NetworkUtilities.Processing;
 using System.Diagnostics;
@@ -12,7 +11,7 @@ public static class Network
     {
         /* TODO: Use env variables */
         var connectionString = "Server=pipos.dev.tillvaxtverket.se;database=pipos_master;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
-        var connectionStringrut = "Server=pipos.dev.tillvaxtverket.se;database=pip_rutdata;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
+        // var connectionStringrut = "Server=pipos.dev.tillvaxtverket.se;database=pip_rutdata;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
 
         List<Node> nodes = await NVDB.ReadData(connectionString, scenario_id);
 
