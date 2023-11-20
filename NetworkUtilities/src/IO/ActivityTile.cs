@@ -32,7 +32,7 @@ public static class ActivityTile
 
         await using (var cmd = dataSource.CreateCommand(
             $@"SELECT pipos_id FROM scenario{scenario_id}.total_all
-            WHERE pop_male > 0 or pop_female > 0 or pop_work > 0 or synt_pop_touristbeds > 0"))
+            WHERE pop_male > 0 or pop_female > 0 or pop_work > 0 or synt_pop_touristbeds > 0 ORDER BY pipos_id"))
 
         await using (var reader = await cmd.ExecuteReaderAsync())
         {

@@ -20,7 +20,7 @@ public static class PiposPath
         } 
         else// if(storage == Storage.Database)
         {
-            return ($"sceanrio{sceanrio_id}_index", $"{transportmodel}");
+            return ($"scenario{sceanrio_id}_index", $"{transportmodel}");
         }
     }
     public static (string, string) GetLogsum(int sceanrio_id, string travelreason, string transportmodel, Storage storage)
@@ -31,7 +31,7 @@ public static class PiposPath
         }
         else// if (storage == Storage.Database)
         {
-            return ($"sceanrio{sceanrio_id}_logsum", $"{transportmodel}"); ;
+            return ($"scenario{sceanrio_id}_logsum", $"{transportmodel}"); ;
         }
     }
 
