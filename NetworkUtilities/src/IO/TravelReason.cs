@@ -25,8 +25,7 @@ public static class TravelReason
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
         Dictionary<string, CommonVariables> cv = new Dictionary<string, CommonVariables>();
 
-        await using (var cmd = dataSource.CreateCommand($@"SELECT databasename, category, menuname, tindexmodell, maximal_search_distans_kilometre, time_parameter_minutes
-            FROM common.tr_common_variables"))
+        await using (var cmd = dataSource.CreateCommand($@"SELECT datanamn, kategori, reseanledning_ny, ""antal av betydelse"", ""max resavstånd bil"", ""max resavstånd tid bil"" FROM common.tr_common_variables"))
         
         await using (var dataReader = cmd.ExecuteReader())
         {
