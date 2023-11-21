@@ -25,7 +25,30 @@ public class GTFSData
     public Dictionary<string, List<Transfer>> TransfersFromStop => _transfersFromStop;
 
     public Stop GetStop(string stopId) => _stops[stopId];
-    public List<Transfer> GetTransfersFromStop(string stopId) => _transfersFromStop[stopId];
+    public IEnumerable<Transfer> GetTransfersFromStop(string stopId) => _transfersFromStop[stopId];
+    public IEnumerable<StopTime> GetStopTimesFromStop(string stopId, int fromTime, int toTime)
+    {
+        var start = 0;
+        int end;
+        var stopTimes = GetStopTimesFromStop(stopId);
+        int dep;
+
+        for (var i = 0; i < stopTimes.Count; i++)
+        {
+            dep = stopTimes[i].DepartureTime!.Value.TotalSeconds;
+            if (start == 0 && dep >= fromTime)
+            {
+                start = i;
+            }
+
+            if (start > 0 && dep > toTime)
+            {
+                end = i;
+                return stopTimes.GetRange(start, Math.Max(end - start, 1));
+            }
+        }
+        return new StopTime[0];
+    }
     public List<StopTime> GetStopTimesFromStop(string stopId) => _stopTimesPerStop.TryGetValue(stopId, out var stopTimes) ? 
         stopTimes : new List<StopTime>();
     public List<StopTime> GetStopTimesFromTrip(string tripId) => _stopTimesPerTrip[tripId];

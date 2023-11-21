@@ -79,9 +79,10 @@ public class GTFSRaider
         var result = new List<Departure>();
 
         var transferStopTimes = data.GetTransfersFromStop(stop.Id).SelectMany(t =>
-            data.GetStopTimesFromStop(t.ToStopId)
-                .Where(x => x.DepartureTime?.TotalSeconds >= currentTime + int.Parse(t.MinimumTransferTime) &&
-                    x.DepartureTime?.TotalSeconds < currentTime + int.Parse(t.MinimumTransferTime) + maxWaitTime));
+            data.GetStopTimesFromStop(t.ToStopId, 
+                currentTime + int.Parse(t.MinimumTransferTime), 
+                currentTime + int.Parse(t.MinimumTransferTime) + maxWaitTime)
+        );
 
         var customEndpoints = data.GetTransfersFromStop(stop.Id)
             .Where(t => data.GetStop(t.ToStopId).Tag != null && StopType.Target == (StopType)data.GetStop(t.ToStopId).Tag)
@@ -89,10 +90,7 @@ public class GTFSRaider
 
         result.AddRange(customEndpoints);
 
-        var regularStopTimes = data.GetStopTimesFromStop(stop.Id)
-            .Where(x => x.DepartureTime?.TotalSeconds >= currentTime &&
-                x.DepartureTime?.TotalSeconds < currentTime + maxWaitTime);
-
+        var regularStopTimes = data.GetStopTimesFromStop(stop.Id, currentTime, currentTime + maxWaitTime);
         var validStopTimes = transferStopTimes.Concat(regularStopTimes);
 
         foreach (var stopTime in validStopTimes)
@@ -144,6 +142,59 @@ public class GTFSRaider
         var nextStopTime = sequence[(int)stopTime.StopSequence];
         var totalTime = (nextStopTime.ArrivalTime?.TotalSeconds - stopTime.ArrivalTime?.TotalSeconds) ?? 0;
         return (totalTime, nextStopTime.StopId);
+    }
+
+    static IEnumerable<StopTime> SearchByDeparture(List<StopTime> stopTimes, int min, int max)
+    {
+        var start = 0;
+        var end = 0;
+        int dep;
+        for (var i = 0; i < stopTimes.Count; i++)
+        {
+            dep = stopTimes[i].DepartureTime!.Value.TotalSeconds;
+            if (start == 0 && dep > min)
+            {
+                start = i;
+            }
+
+            if (start > 0 && dep > max)
+            {
+                end = i;
+                return stopTimes.GetRange(start, Math.Max(end - start, 1));
+            }
+        }
+        return new StopTime[0];
+    }
+
+    static List<StopTime> BinarySearchByDeparture(List<StopTime> stopTimes, int min, int max)
+    {
+        List<StopTime> result = new List<StopTime>();
+
+        int left = 0;
+        int right = stopTimes.Count - 1;
+
+        while (left <= right)
+        {
+            int middle = left + (right - left) / 2;
+
+            int currentDeparture = stopTimes[middle].DepartureTime!.Value.TotalSeconds;
+
+            if (currentDeparture >= min && currentDeparture <= max)
+            {
+                result.Add(stopTimes[middle]);
+            }
+
+            if (currentDeparture < min)
+            {
+                left = middle + 1;
+            }
+            else
+            {
+                right = middle - 1;
+            }
+        }
+
+        return result;
     }
 
     public enum StopType

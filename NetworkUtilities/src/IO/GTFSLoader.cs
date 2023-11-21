@@ -10,7 +10,10 @@ public class GTFSLoader
         var reader = new GTFSReader<GTFSFeed>();
         var feed = reader.Read(gtfsFeedFilename);
 
-        var stopTimesPerStop = feed.StopTimes.GroupBy(x => x.StopId).ToDictionary(x => x.Key, v => v.ToList());
+        var stopTimesPerStop = feed.StopTimes
+            .GroupBy(x => x.StopId)
+            .ToDictionary(x => x.Key, v => v.OrderBy(i => i.DepartureTime!.Value.TotalSeconds)
+            .ToList());
         var stopTimesPerTrip = feed.StopTimes.OrderBy(x => x.StopSequence).GroupBy(x => x.TripId).ToDictionary(x => x.Key, v => v.ToList());
         var transfersFromStop = feed.Transfers.GroupBy(x => x.FromStopId).ToDictionary(x => x.Key, v => v.ToList());
         var stops = feed.Stops.ToDictionary(x => x.Id);
