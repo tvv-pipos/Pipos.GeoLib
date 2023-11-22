@@ -1,25 +1,24 @@
-using GTFS.Entities;
 using Pipos.Common.NetworkUtilities.Model;
 
 namespace Pipos.Common.NetworkUtilities.Processing;
 
 public class GTFSRaider
 {
-    public Dictionary<string, int> CalculateDistances(GTFSData data, Stop stop, int maxTravelTimeInSeconds, 
+    public Dictionary<long, int> CalculateDistances(GTFSData data, GTFSStop stop, int maxTravelTimeInSeconds, 
         int startTime, bool removeInitialWaitTime)
     {
-        var isochroneStops = new Dictionary<string, int>();
+        var isochroneStops = new Dictionary<long, int>();
         if (stop != null)
         {
-            var visitedStops = new HashSet<string>();
+            var visitedStops = new HashSet<long>();
 
             var queue = new MinHeap<Departure>();
-            queue.Add(new Departure(stop.Id, 0, "", 0, null));
+            queue.Add(new Departure(stop.Id, 0, 0, 0, null));
 
             while (queue.Count > 0)
             {
                 var currentStopInfo = queue.RemoveMin();
-                string currentStopId = currentStopInfo.TargetStopId;
+                var currentStopId = currentStopInfo.TargetStopId;
                 int currentTravelTime = currentStopInfo.TravelTime;
 
                 if (visitedStops.Contains(currentStopId))
@@ -35,7 +34,7 @@ public class GTFSRaider
                 }
 
                 // Vi har nått en målpunkt, gå vidare.
-                if (data.GetStop(currentStopId).Tag != null && StopType.Target == (StopType)data.GetStop(currentStopId).Tag)
+                if (data.GetStop(currentStopId).StopType == StopType.Target)
                 {
                     isochroneStops[currentStopId] -= (GetInitialWaitTime(currentStopInfo) * 1000);
                     continue;
@@ -51,7 +50,7 @@ public class GTFSRaider
                     int nextTravelTime = currentTravelTime + departue.TravelTime;
 
                     int transferCount = currentStopInfo.TransferCount;
-                    if (!string.IsNullOrEmpty(currentStopInfo.TripId) &&
+                    if (currentStopInfo.TripId > 0 &&
                         currentStopInfo.TripId != departue.TripId)
                     {
                         transferCount++;
@@ -59,7 +58,7 @@ public class GTFSRaider
                     }
 
                     // Hämta nästa hållplats
-                    string nextStopId = departue.TargetStopId;
+                    var nextStopId = departue.TargetStopId;
 
                     // Om nästa hållplats inte har besökts än och den inte är längre bort än maxTravelTimeInSeconds
                     if (!visitedStops.Contains(nextStopId) && nextTravelTime <= maxTravelTimeInSeconds)
@@ -74,19 +73,19 @@ public class GTFSRaider
         return isochroneStops;
     }
 
-    static List<Departure> GetDepartures(GTFSData data, Stop stop, int currentTime, int maxWaitTime, bool removeInitialWaitTime = false)
+    static List<Departure> GetDepartures(GTFSData data, GTFSStop stop, int currentTime, int maxWaitTime, bool removeInitialWaitTime = false)
     {
         var result = new List<Departure>();
 
         var transferStopTimes = data.GetTransfersFromStop(stop.Id).SelectMany(t =>
             data.GetStopTimesFromStop(t.ToStopId, 
-                currentTime + int.Parse(t.MinimumTransferTime), 
-                currentTime + int.Parse(t.MinimumTransferTime) + maxWaitTime)
+                currentTime + t.MinimumTransferTime, 
+                currentTime + t.MinimumTransferTime + maxWaitTime)
         );
 
         var customEndpoints = data.GetTransfersFromStop(stop.Id)
-            .Where(t => data.GetStop(t.ToStopId).Tag != null && StopType.Target == (StopType)data.GetStop(t.ToStopId).Tag)
-            .Select(t => new Departure(t.ToStopId, int.Parse(t.MinimumTransferTime), "", 0, null));
+            .Where(t => data.GetStop(t.ToStopId).StopType == StopType.Target)
+            .Select(t => new Departure(t.ToStopId, t.MinimumTransferTime, 0, 0, null));
 
         result.AddRange(customEndpoints);
 
@@ -96,17 +95,17 @@ public class GTFSRaider
         foreach (var stopTime in validStopTimes)
         {
             var (travelTime, nextStopId) = GetHeadTravelTime(data, stopTime);
-            travelTime += (stopTime.DepartureTime?.TotalSeconds - currentTime) ?? 0;
+            travelTime += (stopTime.DepartureTime - currentTime);
 
             var initTime = 0;
             // Drar bort den initiala väntetiden, dvs resenären anpassar tiden den går hemifrån mot avgången.
-            if (removeInitialWaitTime && stop.Tag != null && ((StopType)stop.Tag) == StopType.Start)
+            if (removeInitialWaitTime && stop.StopType == StopType.Start)
             {
                 var transfer = data.GetTransfersFromStop(stop.Id).First(x => x.ToStopId == stopTime.StopId);
-                initTime = travelTime - int.Parse(transfer.MinimumTransferTime);
+                initTime = travelTime - transfer.MinimumTransferTime;
             }
 
-            if (!string.IsNullOrEmpty(nextStopId))
+            if (nextStopId > 0)
             {
                 result.Add(new Departure(nextStopId, travelTime, stopTime.TripId, 0, null, initTime));
             }
@@ -129,90 +128,31 @@ public class GTFSRaider
         return 0;
     }
 
-    static (int travelTime, string nextStopId) GetHeadTravelTime(
-        GTFSData data, StopTime stopTime)
+    static (int travelTime, long nextStopId) GetHeadTravelTime(
+        GTFSData data, GTFSStopTime stopTime)
     {
         var sequence = data.GetStopTimesFromTrip(stopTime.TripId);
 
         if (stopTime.StopSequence == sequence.Count)
         {
-            return (0, string.Empty);
+            return (0, 0);
         }
 
         var nextStopTime = sequence[(int)stopTime.StopSequence];
-        var totalTime = (nextStopTime.ArrivalTime?.TotalSeconds - stopTime.ArrivalTime?.TotalSeconds) ?? 0;
+        var totalTime = nextStopTime.ArrivalTime - stopTime.ArrivalTime;
         return (totalTime, nextStopTime.StopId);
-    }
-
-    static IEnumerable<StopTime> SearchByDeparture(List<StopTime> stopTimes, int min, int max)
-    {
-        var start = 0;
-        var end = 0;
-        int dep;
-        for (var i = 0; i < stopTimes.Count; i++)
-        {
-            dep = stopTimes[i].DepartureTime!.Value.TotalSeconds;
-            if (start == 0 && dep > min)
-            {
-                start = i;
-            }
-
-            if (start > 0 && dep > max)
-            {
-                end = i;
-                return stopTimes.GetRange(start, Math.Max(end - start, 1));
-            }
-        }
-        return new StopTime[0];
-    }
-
-    static List<StopTime> BinarySearchByDeparture(List<StopTime> stopTimes, int min, int max)
-    {
-        List<StopTime> result = new List<StopTime>();
-
-        int left = 0;
-        int right = stopTimes.Count - 1;
-
-        while (left <= right)
-        {
-            int middle = left + (right - left) / 2;
-
-            int currentDeparture = stopTimes[middle].DepartureTime!.Value.TotalSeconds;
-
-            if (currentDeparture >= min && currentDeparture <= max)
-            {
-                result.Add(stopTimes[middle]);
-            }
-
-            if (currentDeparture < min)
-            {
-                left = middle + 1;
-            }
-            else
-            {
-                right = middle - 1;
-            }
-        }
-
-        return result;
-    }
-
-    public enum StopType
-    {
-        Start,
-        Target
     }
 
     internal class Departure : IComparable<Departure>
     {
-        public string TripId { get; set; } = string.Empty;
-        public string TargetStopId { get; set; } = string.Empty;
+        public long TripId { get; set; }
+        public long TargetStopId { get; set; }
         public int TravelTime { get; set; }
         public int TransferCount { get; set; }
         public int InitalWaitTime { get; set; }
         public Departure? Previous { get; set; }
 
-        public Departure(string targetStopId, int travelTime, string tripId,
+        public Departure(long targetStopId, int travelTime, long tripId,
             int transferCount, Departure? prev, int initialWaitTime = 0)
         {
             TargetStopId = targetStopId;
