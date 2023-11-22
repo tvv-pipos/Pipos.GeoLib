@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Pipos.Common.NetworkUtilities.Processing;
+using System.Text.RegularExpressions;
 
 namespace Pipos.Common.NetworkUtilities.IO;
 
@@ -10,6 +11,7 @@ public class GTFSLoader
 {   
     readonly ILogger<GTFSLoader> _logger;
     readonly static CoordinateTransformation _transformer = new CoordinateTransformation();
+    readonly static Regex _csvParser = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
     public GTFSLoader(ILogger<GTFSLoader> logger)
     {
         _logger = logger;
@@ -100,7 +102,7 @@ public class GTFSLoader
 
     static GTFSStop ParseStop(string row)
     {
-        var cols = row.Split(",");
+        var cols = _csvParser.Split(row);
         var (x, y) = _transformer.Wgs84ToSwref99(Parser.ParseDouble(cols[3]), Parser.ParseDouble(cols[2]));
         return new GTFSStop
         {
