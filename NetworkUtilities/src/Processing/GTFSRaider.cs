@@ -13,7 +13,7 @@ public class GTFSRaider
             var visitedStops = new HashSet<long>();
 
             var queue = new MinHeap<Departure>();
-            queue.Add(new Departure(stop.Id, 0, 0, 0, null));
+            queue.Add(new Departure(stop.Id, 10, 0, 0, null));
 
             while (queue.Count > 0)
             {
