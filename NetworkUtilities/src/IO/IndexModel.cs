@@ -24,7 +24,7 @@ public static class IndexModel
 
     private static void SaveResultToFile(string path, string filename, int[] startId, Dictionary<string, float[]> result)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        Directory.CreateDirectory(Path.GetDirectoryName($"{path}/{filename}"));
         var csv = new StringBuilder();
         csv.Append("id, x, y");
         foreach (var (name, res) in result)

@@ -1,10 +1,11 @@
 using Npgsql;
+using Pipos.Common.NetworkUtilities.Model;
 namespace Pipos.Common.NetworkUtilities.IO;
 public static class TotalAll
 {
     public static readonly string[] IgnoreColumns = { "tile_250", "pipos_id", "geom" };
 
-    public async static Task<Dictionary<int, Dictionary<string, float>>> ReadTotalAll(string connectionString, int scenario_id)
+    public async static Task<DataMatrix> ReadTotalAll(string connectionString, int scenario_id)
     {
         Dictionary<int, Dictionary<string, float>> data = new Dictionary<int, Dictionary<string, float>>();
 
@@ -50,28 +51,6 @@ public static class TotalAll
                 data.Add(piposId[i], row);
             }
         }
-        return data;
+        return new DataMatrix(data);
     }
-
-    /*public async static Task<List<int>> ReadTotalAllTiles(string connectionString, int scenario_id)
-    {
-        List<int> pipos_id = new List<int>();
-
-        await using var dataSource = NpgsqlDataSource.Create(connectionString);
-        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM scenario{scenario_id}.total_all"))
-        await using (var dataReader = cmd.ExecuteReader())
-        {
-            while (dataReader != null && dataReader.Read())
-            {
-                for (int i = 0; i < dataReader.FieldCount; i++)
-                {
-                    if (dataReader.GetName(i).Equals("pipos_id"))
-                    {
-                        pipos_id.Add(dataReader.GetInt32(i));
-                    }
-                }
-            }
-        }
-        return pipos_id;
-    }*/
 }
