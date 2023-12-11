@@ -23,7 +23,7 @@ public static class PiposPath
             return ($"scenario{sceanrio_id}_index", $"{transportmodel}");
         }
     }
-    public static (string, string) GetLogsum(int sceanrio_id, string travelreason, string transportmodel, Storage storage)
+    public static (string, string) GetLogsum(int sceanrio_id, string transportmodel, Storage storage)
     {
         if (storage == Storage.File)
         {
