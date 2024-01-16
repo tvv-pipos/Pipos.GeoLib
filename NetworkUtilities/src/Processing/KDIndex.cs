@@ -126,7 +126,7 @@ public class KDIndex
 
         var stack = new Stack<int>(new int[] { 0, _ids.Length - 1, 0 });
         var result = new List<int>();
-        var r2 = r * r;
+        double r2 = (double)r * (double)r;
 
         // recursively search for items within radius in the kd-sorted arrays
         while (stack.Any())
@@ -261,10 +261,10 @@ public class KDIndex
         arr[j] = tmp;
     }
 
-    static long SqDist(int ax, int ay, int bx, int by)
+    static double SqDist(int ax, int ay, int bx, int by)
     {
-        long dx = ax - bx;
-        long dy = ay - by;
+        double dx = ax - bx;
+        double dy = ay - by;
         return dx * dx + dy * dy;
     }
 }
