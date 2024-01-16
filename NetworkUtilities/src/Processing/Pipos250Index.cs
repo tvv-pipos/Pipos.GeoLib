@@ -70,18 +70,17 @@ public class Pipos250Index
         return FindAll(ids, idx, x, y, distance);
     }
 
-    public int FindAll(int[] ids, int idx, int x, int y, int distance)
+    public int FindAll(int[] ids, int idx, int x, int y, int maxdistance)
     {
         int n = 0;
         int id = 0;
-        double sq_dist = (double)distance * (double)distance;
 
         if (_Grid[idx] != null)
         {
             foreach (Coord coord in _Grid[idx])
             {
-                double sq = (coord.x - x) * (coord.x - x) + (coord.y - y) * (coord.y - y);
-                if (sq < sq_dist)
+                double distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                if (distance < maxdistance)
                 {
                     ids[id++] = coord.id;
                 }
@@ -93,7 +92,7 @@ public class Pipos250Index
         int x2 = Grid250.XFromCoordiante(x) + 1;
         int y2 = Grid250.YFromCoordiante(y) + 1;
 
-        while (125.0 + n * 250.0 < distance && (x1 >= 0 || x2 < Grid250.Width || y1 >= 0 || y2 < Grid250.Height))
+        while (125.0 + n * 250.0 < maxdistance && (x1 >= 0 || x2 < Grid250.Width || y1 >= 0 || y2 < Grid250.Height))
         {
             if (y1 >= 0)
             {
@@ -108,8 +107,8 @@ public class Pipos250Index
                     {
                         foreach (Coord coord in _Grid[idx])
                         {
-                            double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                            if (sq < sq_dist)
+                            double distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                            if (distance < maxdistance)
                             {
                                 ids[id++] = coord.id;
                             }
@@ -131,8 +130,8 @@ public class Pipos250Index
                     {
                         foreach (Coord coord in _Grid[idx])
                         {
-                            double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                            if (sq < sq_dist)
+                            double distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                            if (distance < maxdistance)
                             {
                                 ids[id++] = coord.id;
                             }
@@ -154,8 +153,8 @@ public class Pipos250Index
                     {
                         foreach (Coord coord in _Grid[idx])
                         {
-                            double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                            if (sq < sq_dist)
+                            double distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                            if (distance < maxdistance)
                             {
                                 ids[id++] = coord.id;
                             }
@@ -177,8 +176,8 @@ public class Pipos250Index
                     {
                         foreach (Coord coord in _Grid[idx])
                         {
-                            double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                            if (sq < sq_dist)
+                            double distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                            if (distance < maxdistance)
                             {
                                 ids[id++] = coord.id;
                             }
@@ -215,16 +214,16 @@ public class Pipos250Index
     {
         int n = 0;
         int id = Int32.MaxValue;
-        double sq_dist = Double.MaxValue;
+        double distance = Double.MaxValue;
 
         if (_Grid[idx] != null)
         {
             foreach (Coord coord in _Grid[idx])
             {
-                double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                if (sq < sq_dist || (sq == sq_dist && id > coord.id))
+                double new_distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                if (new_distance < distance || (new_distance == distance && id > coord.id))
                 {
-                    sq_dist = sq;
+                    distance = new_distance;
                     id = coord.id;
                 }
             }
@@ -250,10 +249,10 @@ public class Pipos250Index
                     {
                         foreach (Coord coord in _Grid[idx])
                         {
-                            double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                            if (sq < sq_dist || (sq == sq_dist && id > coord.id))
+                            double new_distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                            if (new_distance < distance || (new_distance == distance && id > coord.id))
                             {
-                                sq_dist = sq;
+                                distance = new_distance;
                                 id = coord.id;
                             }
                         }
@@ -274,10 +273,10 @@ public class Pipos250Index
                     {
                         foreach (Coord coord in _Grid[idx])
                         {
-                            double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                            if (sq < sq_dist || (sq == sq_dist && id > coord.id))
+                            double new_distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                            if (new_distance < distance || (new_distance == distance && id > coord.id))
                             {
-                                sq_dist = sq;
+                                distance = new_distance;
                                 id = coord.id;
                             }
                         }
@@ -298,10 +297,10 @@ public class Pipos250Index
                     {
                         foreach (Coord coord in _Grid[idx])
                         {
-                            double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                            if (sq < sq_dist || (sq == sq_dist && id > coord.id))
+                            double new_distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                            if (new_distance < distance || (new_distance == distance && id > coord.id))
                             {
-                                sq_dist = sq;
+                                distance = new_distance;
                                 id = coord.id;
                             }
                         }
@@ -322,10 +321,10 @@ public class Pipos250Index
                     {
                         foreach (Coord coord in _Grid[idx])
                         {
-                            double sq = (double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y);
-                            if (sq < sq_dist || (sq == sq_dist && id > coord.id))
+                            double new_distance = Math.Sqrt((double)(coord.x - x) * (double)(coord.x - x) + (double)(coord.y - y) * (double)(coord.y - y));
+                            if (new_distance < distance || (new_distance == distance && id > coord.id))
                             {
-                                sq_dist = sq;
+                                distance = new_distance;
                                 id = coord.id;
                             }
                         }
