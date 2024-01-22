@@ -50,7 +50,7 @@ public static class TravelReason
         Dictionary<string, float[]> tr_data = new Dictionary<string, float[]>();
 
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
-        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM tr_scenario{scenario_id}.tr_total_all2"))
+        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM tr_scenario{scenario_id}.tr_total_all"))
         await using (var dataReader = cmd.ExecuteReader())
         {
             var AttributeMap = new Dictionary<string, int>(dataReader.FieldCount);
@@ -95,7 +95,7 @@ public static class TravelReason
         List<int> pipos_id = new List<int>();
 
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
-        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM tr_scenario{scenario_id}.tr_total_all2"))
+        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM tr_scenario{scenario_id}.tr_total_all"))
         await using (var dataReader = cmd.ExecuteReader())
         {
             while (dataReader != null && dataReader.Read())
