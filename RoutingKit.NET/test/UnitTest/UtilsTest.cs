@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using RoutingKit;
-using Utils;
+using Pipos.Common.NetworkUtilities.IO;
 
 namespace UnitTest;
 
@@ -22,12 +22,14 @@ public class UtilsTest
     public async Task Test1()
     {
         
-        var graph = await Network.LoadNVDB();
+        var graph = await Network.LoadFullNVDB(2022);
         var ch = ContractionHierarchy.Build(
             graph.NodeCount,
             graph.Tail,
             graph.Head,
             graph.GeoDistance,
+            graph.Latitude,
+            graph.Longitude,
             (txt) => { Debug.WriteLine(txt); }
         );
 

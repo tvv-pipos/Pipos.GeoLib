@@ -1,4 +1,5 @@
 using RoutingKit;
+using Pipos.Common.NetworkUtilities.IO;
 
 namespace UnitTest;
 
@@ -16,9 +17,12 @@ public class ContractionHierarchyTest
         var head = new List<int> { 2, 3, 2};
         var weight = new List<int> { 1, 1, 1 };
         var targetList = new List<int> { 3, 2 };
+        var longitude = new List<int> {0, 1, 2};
+        var latitude = new List<int> {0, 1, 2};
+
         var nodeCount = 4;
 
-        var ch = ContractionHierarchy.Build(nodeCount, tail, head, weight);
+        var ch = ContractionHierarchy.Build(nodeCount, tail, head, weight, latitude, longitude);
         // var q = new ContractionHierarchyQuery(ch);
         // var usedSource = q
         //     .Reset()

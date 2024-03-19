@@ -1,8 +1,4 @@
-using RoutingKit;
-using System.Linq;
 using Pipos.Common.NetworkUtilities.Model;
-using Pipos.Common.NetworkUtilities.Processing;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Npgsql;
