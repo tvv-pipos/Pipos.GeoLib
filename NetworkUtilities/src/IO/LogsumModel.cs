@@ -1,8 +1,4 @@
-using RoutingKit;
-using System.Linq;
 using Pipos.Common.NetworkUtilities.Model;
-using Pipos.Common.NetworkUtilities.Processing;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Npgsql;
@@ -24,7 +20,23 @@ public static class LogsumModel
 
     private static void SaveResultToFile(string path, string filename, int[] startId, Dictionary<string, float[]> result)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName($"{path}/{filename}"));
+        if (string.IsNullOrEmpty(path))
+        {
+            throw new ArgumentException($"{nameof(path)} cannot be null or empty");
+        }
+        if (string.IsNullOrEmpty(filename))
+        {
+            throw new ArgumentException($"{nameof(filename)} cannot be null or empty");
+        }
+
+        var directoryName = Path.GetDirectoryName($"{path}/{filename}");
+
+        if (directoryName == null)
+        {
+            throw new ArgumentException($"The directory name {directoryName} does not exists");
+        }
+
+        Directory.CreateDirectory(directoryName);
         var csv = new StringBuilder();
         csv.Append("id, x, y");
         foreach (var (name, res) in result)
