@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RoutingKit\RoutingKit.csproj" />
+    <ProjectReference Include="../../../NetworkUtilities/NetworkUtilities.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,8 @@
 using System.Diagnostics;
 using NUnit.Framework.Internal;
 using RoutingKit;
-using Utils;
+using Pipos.Common.NetworkUtilities.Model;
+using Pipos.Common.NetworkUtilities.IO;
 
 namespace UnitTest;
 
