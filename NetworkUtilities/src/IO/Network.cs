@@ -1,17 +1,12 @@
 using RoutingKit;
 using Pipos.Common.NetworkUtilities.Model;
-using Pipos.Common.NetworkUtilities.Processing;
-using System.Diagnostics;
 
 namespace Pipos.Common.NetworkUtilities.IO;
 
 public static class Network
 {
-    public static async Task<RoutingGraph> LoadFullNVDB(int scenario_id)
+    public static async Task<RoutingGraph> LoadFullNVDB(string connectionString, int scenario_id)
     {
-        /* TODO: Use env variables */
-        var connectionString = "Server=pipos.dev.tillvaxtverket.se;database=pipos_master;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
-
         List<Node> nodes = await NVDB.ReadData(connectionString, scenario_id);
 
         for (int i = 0; i < nodes.Count; i++)
