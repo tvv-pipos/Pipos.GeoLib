@@ -101,6 +101,12 @@ public class Voronoi
                 return (currentNode, distances[currentNode.Index]);
             }
 
+            // Passera inte genom anslutningsnoder, då blir dom som artificiella bryggor
+            if (currentNode.NodeType == NodeType.Connection && currentNode != startNode)
+            {
+                continue;
+            }
+
             foreach (var edge in currentNode.Edges)
             {
                 var target = edge.GetOtherNode(currentNode);
@@ -119,12 +125,9 @@ public class Voronoi
 
                 if ((distances[target.Index] == 0 || distances[target.Index] > weight) && weight < maxSearchDistance)
                 {
-                    //if (target.NodeType != NodeType.Default || !edge.IsConnectionEdge)
-                    {
-                        counter++;
-                        distances[target.Index] = weight;
-                        queue.Add((uint)target.Index, (uint)weight);
-                    }
+                    counter++;
+                    distances[target.Index] = weight;
+                    queue.Add((uint)target.Index, (uint)weight); 
                 }
             }
         }
