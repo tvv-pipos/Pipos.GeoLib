@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using Pipos.Common.NetworkUtilities.Model;
 using Pipos.Napier.IO;
@@ -7,7 +8,9 @@ using static Pipos.Common.NetworkUtilities.Model.PiposID;
 
 namespace Pipos.Common.NetworkUtilities.IO;
 
-public class DistanceModel: IDistanceModel
+public class DistanceModel(
+    ILogger<DistanceModel> logger
+    ): IDistanceModel
 {
     /// <summary>
     /// Saves the result from calculation
@@ -36,7 +39,14 @@ public class DistanceModel: IDistanceModel
     /// <param name="result"></param>
     private async Task SaveResultToFileAsync(string path, string filename, int[] startId, Dictionary<string, float[]> result)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName($"{path}/{filename}"));
+        var targetPath = Path.GetDirectoryName($"{path}/{filename}");
+        if (targetPath == null)
+        {
+            logger.LogError("Target path is null");
+            throw new IOException("Target path is null");
+        }
+        
+        Directory.CreateDirectory(targetPath);
         var csv = new StringBuilder();
         csv.Append("id, x, y");
         foreach (var (name, res) in result)
@@ -46,7 +56,7 @@ public class DistanceModel: IDistanceModel
 
         csv.AppendLine();
 
-        for (int i = 0; i < startId.Length; i++)
+        for (var i = 0; i < startId.Length; i++)
         {
             csv.Append($"{startId[i]}, {PiposID.XFromId(startId[i]) + 125}, {PiposID.YFromId(startId[i]) + 125}");
             foreach (var (name, res) in result)
@@ -58,6 +68,7 @@ public class DistanceModel: IDistanceModel
         }
 
         await File.WriteAllTextAsync($"{path}/{filename}", csv.ToString());
+        logger.LogInformation("Saved result to {Path}/{Filename}", path, filename);
     }
 
     /// <summary>
