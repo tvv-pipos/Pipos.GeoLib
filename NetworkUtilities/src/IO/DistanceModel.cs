@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Pipos.Common.NetworkUtilities.Model;
@@ -9,7 +10,8 @@ using static Pipos.Common.NetworkUtilities.Model.PiposID;
 namespace Pipos.Common.NetworkUtilities.IO;
 
 public class DistanceModel(
-    ILogger<DistanceModel> logger
+    ILogger<DistanceModel> logger,
+    IConfiguration configuration
     ): IDistanceModel
 {
     /// <summary>
@@ -23,7 +25,7 @@ public class DistanceModel(
     public async Task SaveResultAsync(int scenarioId, string transportModel, PiposPath.Storage storage, int[] startId,
         Dictionary<string, float[]> result)
     {
-        var (path, name) = PiposPath.GetIndex(scenarioId, transportModel, storage);
+        var (path, name) = PiposPath.GetClosest(scenarioId, transportModel, storage);
         if (storage == PiposPath.Storage.File)
             await SaveResultToFileAsync(path, name, startId, result);
         else
@@ -39,6 +41,8 @@ public class DistanceModel(
     /// <param name="result"></param>
     private async Task SaveResultToFileAsync(string path, string filename, int[] startId, Dictionary<string, float[]> result)
     {
+        logger.LogInformation("Saving to file, {Filename}", filename);
+        
         var targetPath = Path.GetDirectoryName($"{path}/{filename}");
         if (targetPath == null)
         {
@@ -80,7 +84,10 @@ public class DistanceModel(
     /// <param name="result"></param>
     private async Task SaveResultToDatabaseAsync(string schema, string table, int[] startId, Dictionary<string, float[]> result)
     {
-        var createTable = new StringBuilder($"CREATE TABLE {schema}.{table} (", 2048);
+        logger.LogInformation("Saving to database, schema {Schema}", schema);
+        
+        var query = $"CREATE TABLE {schema}.{table} (";
+        var createTable = new StringBuilder(query, 2048);
         var columns = new StringBuilder(1024);
 
         foreach (var (column, value) in result)
@@ -95,10 +102,10 @@ public class DistanceModel(
         createTable.Append("pipos_id INTEGER PRIMARY KEY)");
         columns.Append($"pipos_id");
 
-        var copy = $"COPY {schema}.{table} ({columns.ToString()}) from STDIN (FORMAT BINARY)";
+        var copy = $"COPY {schema}.{table} ({columns}) from STDIN (FORMAT BINARY)";
 
-
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(Settings.PiposRutDataConnectionString);
+        var tileWriteConnection = configuration.GetConnectionString("PiposSkrivRutData");
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(tileWriteConnection);
         dataSourceBuilder.UseNetTopologySuite();
         var datasource = dataSourceBuilder.Build();
 
@@ -126,5 +133,6 @@ public class DistanceModel(
         }
 
         await writer.CompleteAsync();
+        logger.LogInformation("Saved to database");
     }
 }

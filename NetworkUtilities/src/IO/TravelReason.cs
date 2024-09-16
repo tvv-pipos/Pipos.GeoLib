@@ -44,31 +44,42 @@ public static class TravelReason
         return cv;
     }
 
-    public async static Task<(int[], Dictionary<string, float[]>)> ReadTravelReasons(string connectionString, int scenario_id)
+    /// <summary>
+    /// Read the travel reasons from the database
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <param name="scenarioId"></param>
+    /// <returns></returns>
+    public static async Task<(int[], Dictionary<string, float[]>)> ReadTravelReasons(string connectionString, int scenarioId)
     {
-        int[] pipos_id = null!;
-        Dictionary<string, float[]> tr_data = new Dictionary<string, float[]>();
+        int[] piposId = null!;
+        var trData = new Dictionary<string, float[]>();
 
+        const string conditions = @"ST_Within(geom, ST_SetSRID(ST_GeomFromGeoJSON('{""type"":""Polygon"",""coordinates"":
+            [[[489109.27917894686,6995947.364573294],[490593.49354063766,6993411.554385832],[492989.5346626497,6993478.111083665],
+            [490560.2151917208,6996779.323296214],[489109.27917894686,6995947.364573294]]]}'), 3006))";
+        var query = $"SELECT * FROM tr_scenario{scenarioId}.tr_total_all WHERE {conditions} ORDER BY pipos_id";
+        
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
-        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM tr_scenario{scenario_id}.tr_total_all ORDER BY pipos_id"))
+        await using (var cmd = dataSource.CreateCommand(query))
         await using (var dataReader = cmd.ExecuteReader())
         {
-            var AttributeMap = new Dictionary<string, int>(dataReader.FieldCount);
+            var attributeMap = new Dictionary<string, int>(dataReader.FieldCount);
             var tmpData = new List<float>[dataReader.FieldCount];
             var tmpId = new List<int>();
 
-            for (int i = 0; i < dataReader.FieldCount; i++)
+            for (var i = 0; i < dataReader.FieldCount; i++)
             {
                 if (!IgnoreColumns.Contains(dataReader.GetName(i)))
                 {
-                    AttributeMap.Add(dataReader.GetName(i), i);
+                    attributeMap.Add(dataReader.GetName(i), i);
                     tmpData[i] = new List<float>();
                 }
             }
 
-            while (dataReader != null && dataReader.Read())
+            while (dataReader.Read())
             {
-                for (int i = 0; i < dataReader.FieldCount; i++)
+                for (var i = 0; i < dataReader.FieldCount; i++)
                 {
                     if (!IgnoreColumns.Contains(dataReader.GetName(i)))
                     {
@@ -81,13 +92,13 @@ public static class TravelReason
                 }
             }
 
-            pipos_id = tmpId.ToArray();
-            foreach (var (name, index) in AttributeMap)
+            piposId = tmpId.ToArray();
+            foreach (var (name, index) in attributeMap)
             {
-                tr_data.Add(name, tmpData[index].ToArray());
+                trData.Add(name, tmpData[index].ToArray());
             }
         }
-        return (pipos_id, tr_data);
+        return (piposId, trData);
     }
 
     public async static Task<List<int>> ReadTravelReasonTiles(string connectionString, int scenario_id)
