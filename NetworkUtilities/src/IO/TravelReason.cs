@@ -44,71 +44,83 @@ public static class TravelReason
         return cv;
     }
 
-    public async static Task<(int[], Dictionary<string, float[]>)> ReadTravelReasons(string connectionString, int scenario_id)
+    /// <summary>
+    /// Reads the travel reasons from DB
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <param name="scenarioId"></param>
+    /// <returns></returns>
+    public static async Task<(int[], Dictionary<string, float[]>)> ReadTravelReasons(string connectionString, int scenarioId)
     {
-        int[] pipos_id = null!;
-        Dictionary<string, float[]> tr_data = new Dictionary<string, float[]>();
+        int[] piposId = null!;
+        var trData = new Dictionary<string, float[]>();
 
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
-        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM tr_scenario{scenario_id}.tr_total_all ORDER BY pipos_id"))
-        await using (var dataReader = cmd.ExecuteReader())
-        {
-            var AttributeMap = new Dictionary<string, int>(dataReader.FieldCount);
-            var tmpData = new List<float>[dataReader.FieldCount];
-            var tmpId = new List<int>();
+        await using var cmd = dataSource.CreateCommand($"SELECT * FROM scenario{scenarioId}_tr.tr_total_all ORDER BY pipos_id");
+        await using var dataReader = cmd.ExecuteReader();
+        
+        var attributeMap = new Dictionary<string, int>(dataReader.FieldCount);
+        var tmpData = new List<float>[dataReader.FieldCount];
+        var tmpId = new List<int>();
 
+        for (var i = 0; i < dataReader.FieldCount; i++)
+        {
+            if (!IgnoreColumns.Contains(dataReader.GetName(i)))
+            {
+                attributeMap.Add(dataReader.GetName(i), i);
+                tmpData[i] = new List<float>();
+            }
+        }
+
+        while (dataReader.Read())
+        {
             for (int i = 0; i < dataReader.FieldCount; i++)
             {
                 if (!IgnoreColumns.Contains(dataReader.GetName(i)))
                 {
-                    AttributeMap.Add(dataReader.GetName(i), i);
-                    tmpData[i] = new List<float>();
+                    tmpData[i].Add(dataReader.GetFloat(i));
                 }
-            }
-
-            while (dataReader != null && dataReader.Read())
-            {
-                for (int i = 0; i < dataReader.FieldCount; i++)
+                if (dataReader.GetName(i).Equals("pipos_id"))
                 {
-                    if (!IgnoreColumns.Contains(dataReader.GetName(i)))
-                    {
-                        tmpData[i].Add(dataReader.GetFloat(i));
-                    }
-                    if (dataReader.GetName(i).Equals("pipos_id"))
-                    {
-                        tmpId.Add(dataReader.GetInt32(i));
-                    }
+                    tmpId.Add(dataReader.GetInt32(i));
                 }
-            }
-
-            pipos_id = tmpId.ToArray();
-            foreach (var (name, index) in AttributeMap)
-            {
-                tr_data.Add(name, tmpData[index].ToArray());
             }
         }
-        return (pipos_id, tr_data);
+
+        piposId = tmpId.ToArray();
+        foreach (var (name, index) in attributeMap)
+        {
+            trData.Add(name, tmpData[index].ToArray());
+        }
+
+        return (piposId, trData);
     }
 
-    public async static Task<List<int>> ReadTravelReasonTiles(string connectionString, int scenario_id)
+    /// <summary>
+    /// Reads the square tiles travel reasons
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <param name="scenarioId"></param>
+    /// <returns></returns>
+    public static async Task<List<int>> ReadTravelReasonTiles(string connectionString, int scenarioId)
     {
-        List<int> pipos_id = new List<int>();
+        var piposId = new List<int>();
 
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
-        await using (var cmd = dataSource.CreateCommand($"SELECT * FROM tr_scenario{scenario_id}.tr_total_all ORDER BY pipos_id"))
-        await using (var dataReader = cmd.ExecuteReader())
+        await using var cmd = dataSource.CreateCommand($"SELECT * FROM scenario{scenarioId}_tr.tr_total_all ORDER BY pipos_id");
+        await using var dataReader = cmd.ExecuteReader();
+        
+        while (dataReader.Read())
         {
-            while (dataReader != null && dataReader.Read())
+            for (var i = 0; i < dataReader.FieldCount; i++)
             {
-                for (int i = 0; i < dataReader.FieldCount; i++)
+                if (dataReader.GetName(i).Equals("pipos_id"))
                 {
-                    if (dataReader.GetName(i).Equals("pipos_id"))
-                    {
-                        pipos_id.Add(dataReader.GetInt32(i));
-                    }
+                    piposId.Add(dataReader.GetInt32(i));
                 }
             }
         }
-        return pipos_id;
+
+        return piposId;
     }
 }
