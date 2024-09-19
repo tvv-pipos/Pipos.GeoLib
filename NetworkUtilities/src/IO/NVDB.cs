@@ -46,15 +46,11 @@ public static class NVDB
                 var functionClass = reader.GetInt32(idx++);
                 var networkGroup = reader.GetInt32(idx++);
 
-                // TODO: Only connect to right group
-                if (networkGroup == 0)
+                var lineString = Parser.ParseLineString(wkt);
+                var nodes = Parser.ParseNodes(lineString, forwardSpeed, backwardSpeed, networkGroup, functionClass);
+                if (nodes.Count > 1)
                 {
-                    var lineString = Parser.ParseLineString(wkt);
-                    var nodes = Parser.ParseNodes(lineString, forwardSpeed, backwardSpeed, networkGroup, functionClass);
-                    if (nodes.Count > 1)
-                    {
-                        MergeNodes(result, nodes);
-                    }
+                    MergeNodes(result, nodes);
                 }
             }
         }
