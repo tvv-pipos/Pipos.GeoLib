@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetworkUtilities", "NetworkUtilities\NetworkUtilities.csproj", "{82BBC1F6-B6E3-49FF-8ED4-F35A0D5F9F13}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RoutingKit.NET", "RoutingKit.NET", "{CDE8B64F-7248-456C-91A9-DB6A98914B29}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5CE32D15-B340-40A4-B853-BE24C51C27A5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest", "RoutingKit.NET\test\UnitTest\UnitTest.csproj", "{CE8853CE-0C9E-4E9F-9E76-23684F0C2043}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{55B26620-A762-40A0-AE72-A40875C16BF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoutingKit", "RoutingKit.NET\src\RoutingKit\RoutingKit.csproj", "{79BDC05D-88CF-4B0B-BA39-B87BA550D640}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82BBC1F6-B6E3-49FF-8ED4-F35A0D5F9F13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82BBC1F6-B6E3-49FF-8ED4-F35A0D5F9F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82BBC1F6-B6E3-49FF-8ED4-F35A0D5F9F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82BBC1F6-B6E3-49FF-8ED4-F35A0D5F9F13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE8853CE-0C9E-4E9F-9E76-23684F0C2043}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE8853CE-0C9E-4E9F-9E76-23684F0C2043}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE8853CE-0C9E-4E9F-9E76-23684F0C2043}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE8853CE-0C9E-4E9F-9E76-23684F0C2043}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79BDC05D-88CF-4B0B-BA39-B87BA550D640}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79BDC05D-88CF-4B0B-BA39-B87BA550D640}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79BDC05D-88CF-4B0B-BA39-B87BA550D640}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79BDC05D-88CF-4B0B-BA39-B87BA550D640}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5CE32D15-B340-40A4-B853-BE24C51C27A5} = {CDE8B64F-7248-456C-91A9-DB6A98914B29}
+		{CE8853CE-0C9E-4E9F-9E76-23684F0C2043} = {5CE32D15-B340-40A4-B853-BE24C51C27A5}
+		{55B26620-A762-40A0-AE72-A40875C16BF8} = {CDE8B64F-7248-456C-91A9-DB6A98914B29}
+		{79BDC05D-88CF-4B0B-BA39-B87BA550D640} = {55B26620-A762-40A0-AE72-A40875C16BF8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CB846CD1-AAE7-4598-AA97-DEFB2C99466E}
+	EndGlobalSection
+EndGlobal
