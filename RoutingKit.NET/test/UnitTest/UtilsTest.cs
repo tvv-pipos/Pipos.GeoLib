@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime;
 using RoutingKit;
 using Pipos.Common.NetworkUtilities.IO;
 
@@ -23,6 +24,11 @@ public class UtilsTest
     {
         
         var graph = await Network.LoadFullNVDB(2022);
+        Network.WriteToFile(graph, "/tmp/graph.bin");
+        GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        
         var ch = ContractionHierarchy.Build(
             graph.NodeCount,
             graph.Tail,

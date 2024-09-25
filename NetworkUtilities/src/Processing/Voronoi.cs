@@ -25,19 +25,19 @@ public class Voronoi
 
         var distances = new int[network.Count];
         var owners = new int[network.Count];
-        var queue = new MinHeap();
+        var queue = new PriorityQueue<Node, int>();
 
         foreach (var start in startNodes)
         {
             distances[start.Index] = 1;
             owners[start.Index] = start.Index;
-            queue.Add((uint)start.Index, 1);
+            queue.Enqueue(start, 1);
         }
 
-        while (!queue.IsEmpty)
+        while (queue.Count > 0)
         {
-            var index = queue.RemoveMin();
-            var currentNode = network[(int)index];
+            var currentNode = queue.Dequeue();
+
             foreach (var edge in currentNode.Edges)
             {
                 var target = edge.GetOtherNode(currentNode);
@@ -67,7 +67,7 @@ public class Voronoi
                     counter++;
                     distances[target.Index] = weight;
                     owners[target.Index] = owners[currentNode.Index];
-                    queue.Add((uint)target.Index, (uint)weight);
+                    queue.Enqueue(target, weight);
                 }
             }
         }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using Npgsql;
 using Pipos.Common.NetworkUtilities.Model;
 
@@ -7,25 +8,19 @@ namespace Pipos.Common.NetworkUtilities.IO;
 
 public static class NVDB
 {
-    public async static Task<List<Node>> ReadDataGotland(string connectionString)
+    public async static Task<List<Node>> ReadData(string connectionString, Scenario scenario)
     {
-        var sql = @"
-            SELECT ST_AsText(the_geom) AS WKT, id, b_kkod, f_kkod, function_class, network_group 
-            FROM road_segment
-            WHERE ST_Intersects(the_geom, ST_GeomFromText('POLYGON ((670158.616364627 6443498.32614359,771465.213997485 6444662.76979455,764769.663004509 6301145.08981466,671031.949102841 6301145.08981466,670158.616364627 6443498.32614359))', 3006))";
-        return await ReadData(connectionString, sql);
-    }
+        string sql = String.Empty;
 
-    public async static Task<List<Node>> ReadData(string connectionString, int scenario_id)
-    {
         /* TODO: use scenario db */
-        var sql = @"
-            SELECT ST_AsText(the_geom) AS WKT, id, b_kkod, f_kkod, function_class, network_group 
-            FROM road_segment";
+        if(scenario.NVDB == 2014)
+            sql = @"SELECT ST_AsText(geom) AS WKT, id, b_hogst_225 as b_kkod, f_hogst_225 as f_kkod, klass_181 as function_class, networkgrp as network_group FROM nvdb_2014_ver2";
+        else
+            sql = @"SELECT ST_AsText(geom) AS WKT, id, b_hogst_225 as b_kkod, f_hogst_225 as f_kkod, klass_181 as function_class, networkgrp as network_group FROM nvdb_2022_ver3";
 
-        return await ReadData(connectionString, sql);
+        return await ReadData(connectionString, sql, scenario);
     }
-    private async static Task<List<Node>> ReadData(string connectionString, string sql)
+    private async static Task<List<Node>> ReadData(string connectionString, string sql, Scenario scenario)
     {
         Console.WriteLine($"Read and build graph...");
         var sw = Stopwatch.StartNew();
@@ -41,9 +36,28 @@ public static class NVDB
                 var idx = 0;
                 var wkt = reader.GetString(idx++);
                 var id = reader.GetInt64(idx++);
-                var backwardSpeed = reader.GetInt32(idx++);
-                var forwardSpeed = reader.GetInt32(idx++);
-                var functionClass = reader.GetInt32(idx++);
+                var backwardSpeed = 0;
+                var forwardSpeed = 0;
+                var functionClass = 0;
+
+                if(!reader.IsDBNull(idx++))
+                {
+                    //backwardSpeed = reader.GetInt32(idx - 1);
+                    backwardSpeed = int.Parse(reader.GetString(idx - 1));
+                }
+
+                if(!reader.IsDBNull(idx++))
+                {
+                    //forwardSpeed = reader.GetInt32(idx - 1);
+                    forwardSpeed = int.Parse(reader.GetString(idx - 1));
+                }
+
+                if(!reader.IsDBNull(idx++))
+                {
+                    //functionClass = reader.GetInt32(idx - 1);
+                    functionClass = int.Parse(reader.GetString(idx - 1));
+                }
+
                 var networkGroup = reader.GetInt32(idx++);
 
                 // TODO: Only connect to right group
@@ -59,7 +73,8 @@ public static class NVDB
             }
         }
         Console.WriteLine($"Read and build done ({sw.Elapsed})");
-        return result.Values.ToList();
+        var data = result.Values.ToList();
+        return data;
     }
 
     public class Connector
@@ -143,135 +158,4 @@ public static class NVDB
         return result;
     }
 
-
-    public async static Task<List<Node>> LoadNetwork(string connectionString, int scenario_id)
-    {
-        List<Node> nodes = new List<Node>();
-        await LoadRoadData(nodes, connectionString, scenario_id);
-        LineSweep(nodes);
-        return nodes;
-    }
-
-    private async static Task LoadRoadData(List<Node> nodes, string connectionString, int scenario_id)
-    {
-        var sql = @"
-            SELECT ST_AsText(the_geom) AS WKT, id, b_kkod, f_kkod, function_class, network_group 
-            FROM road_segment";
-
-        Console.WriteLine($"Read and build graph...");
-        var sw = Stopwatch.StartNew();
-        var result = new Dictionary<long, Node>();
-
-        await using var dataSource = NpgsqlDataSource.Create(connectionString);
-
-        await using (var cmd = dataSource.CreateCommand(sql))
-        await using (var reader = await cmd.ExecuteReaderAsync())
-        {
-            while (await reader.ReadAsync())
-            {
-                Node? last_point = null;
-                int x = 0, y = 0, x2 = 0, y2 = 0;
-
-                var idx = 0;
-                var wkt = reader.GetString(idx++);
-                var id = reader.GetInt64(idx++);
-                var backwardSpeed = reader.GetInt32(idx++);
-                var forwardSpeed = reader.GetInt32(idx++);
-                var functionClass = reader.GetInt32(idx++);
-                var networkGroup = reader.GetInt32(idx++);
-
-                // TODO: Only connect to right group
-                if (networkGroup == 0)
-                {
-                    var lineString = Parser.ParseLineString(wkt);
-                    for(int i = 0; i < lineString.Length; i++)
-                    {
-                        x = lineString[i][0];
-                        y = lineString[i][1];
-
-                        Node point = new Node {
-                            Idx = nodes.Count(),
-                            X = x,
-                            Y = y,
-                            FunctionClass = functionClass,
-                            NetworkGroup = networkGroup
-                        };
-
-                        if (last_point != null)
-                        {
-                            if (last_point.Id == point.Id)
-                            {
-                                continue;
-                            }
-
-                            int dx = x2 - x;
-                            int dy = y2 - y;
-
-                            int distance = (int)Math.Round(Math.Sqrt(dx * dx + dy * dy));
-
-                            Edge edge = new Edge
-                            {
-                                Source = last_point,
-                                Target = point,
-                                Distance = distance,
-                                ForwardSpeed = forwardSpeed,
-                                BackwardSpeed = backwardSpeed,
-                                ForwardTime = forwardSpeed == 0 ? 0 : (int)Math.Round((float)distance / (float)forwardSpeed * 3600.0f),
-                                BackwardTime = backwardSpeed == 0 ? 0 : (int)Math.Round((float)distance / (float)backwardSpeed * 3600.0f)
-                            };
-
-                            last_point.Edges.Add(edge);
-                            point.Edges.Add(edge);
-                        }
-                        nodes.Add(point);
-                        last_point = point;
-                        x2 = x;
-                        y2 = y;
-                    }
-                }
-            }
-        }
-        Console.WriteLine($"Read and build done ({sw.Elapsed})");
-    }
-
-    private static void LineSweep(List<Node> nodes)
-    {
-        List<Node> connected_nodes = new List<Node>();
-        nodes.Sort(delegate (Node n1, Node n2)
-        {
-            if (n1.Y == n2.Y)
-                return n1.X.CompareTo(n2.X);
-            return n1.Y.CompareTo(n2.Y);
-        });
-
-        Node? last_node = null;
-
-        foreach (Node node in nodes)
-        {
-            if (last_node != null
-                && node.Y == last_node.Y
-                && node.X == last_node.X)
-            {
-                foreach (Edge edge in node.Edges)
-                {
-                    last_node.Edges.Add(edge);
-                    if (edge.Source.Idx == node.Idx)
-                        edge.Source = last_node;
-                    else if (edge.Target.Idx == node.Idx)
-                        edge.Target = last_node;
-                    else
-                        Debug.Assert(false);
-                }
-                node.Edges.Clear();
-            }
-            else
-            {
-                connected_nodes.Add(node);
-                last_node = node;
-            }
-        }
-        //var result = nodes.Where(n => n.Edges.Count > 0).ToArray();
-        nodes.Clear();
-        nodes.AddRange(connected_nodes.ToArray());
-    }
 }

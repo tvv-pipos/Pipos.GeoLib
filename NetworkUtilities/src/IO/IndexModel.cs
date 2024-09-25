@@ -9,9 +9,9 @@ namespace Pipos.Common.NetworkUtilities.IO;
 
 public static class IndexModel
 {
-    public static void SaveResult(int scenario_id, string transportmodel, PiposPath.Storage storage, int[] startId, Dictionary<string, float[]> result)
+    public static void SaveResult(Scenario scenario, string transportmodel, PiposPath.Storage storage, int[] startId, Dictionary<string, float[]> result)
     {
-        var (path, name) = PiposPath.GetIndex(scenario_id, transportmodel, storage);
+        var (path, name) = PiposPath.GetIndex(scenario, transportmodel, storage);
         if (storage == PiposPath.Storage.File)
             SaveResultToFile(path, name, startId, result);
         else
@@ -20,7 +20,23 @@ public static class IndexModel
 
     private static void SaveResultToFile(string path, string filename, int[] startId, Dictionary<string, float[]> result)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName($"{path}/{filename}"));
+        if (string.IsNullOrEmpty(path))
+        {
+            throw new ArgumentException($"{nameof(path)} cannot be null or empty");
+        }
+        if (string.IsNullOrEmpty(filename))
+        {
+            throw new ArgumentException($"{nameof(filename)} cannot be null or empty");
+        }
+
+        var directoryName = Path.GetDirectoryName($"{path}/{filename}");
+
+        if (directoryName == null)
+        {
+            throw new ArgumentException($"The directory name {directoryName} does not exists");
+        }
+
+        Directory.CreateDirectory(directoryName);
         var csv = new StringBuilder();
         csv.Append("id, x, y");
         foreach (var (name, res) in result)
