@@ -10,7 +10,7 @@ public static class Network
     public static async Task<RoutingGraph> LoadFullNVDB(Scenario scenario)
     {
         /* TODO: Use env variables */
-        var connectionString = "Server=pipos.dev.tillvaxtverket.se;database=pipos;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=5432";
+        var connectionString = "Server=pipos.dev.tillvaxtverket.se;database=pipos_master;user id=REMOVED_SECRET;password=REMOVED_SECRET;port=40000";
 
         List<Node> nodes = await NVDB.ReadData(connectionString, scenario);
 
