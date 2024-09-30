@@ -17,15 +17,15 @@ public class DistanceModel(
     /// <summary>
     /// Saves the result from calculation
     /// </summary>
-    /// <param name="scenarioId"></param>
+    /// <param name="scenario"></param>
     /// <param name="transportModel"></param>
     /// <param name="storage"></param>
     /// <param name="startId"></param>
     /// <param name="result"></param>
-    public async Task SaveResultAsync(int scenarioId, string transportModel, PiposPath.Storage storage, int[] startId,
+    public async Task SaveResultAsync(Scenario scenario, string transportModel, PiposPath.Storage storage, int[] startId,
         Dictionary<string, float[]> result)
     {
-        var (path, name) = PiposPath.GetClosest(scenarioId, transportModel, storage);
+        var (path, name) = PiposPath.GetClosest(scenario, transportModel, storage);
         if (storage == PiposPath.Storage.File)
             await SaveResultToFileAsync(path, name, startId, result);
         else
