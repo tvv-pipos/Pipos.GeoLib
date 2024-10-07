@@ -4,15 +4,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Pipos.Common.NetworkUtilities.Model;
-using Pipos.Napier.IO;
 using static Pipos.Common.NetworkUtilities.Model.PiposID;
 
 namespace Pipos.Common.NetworkUtilities.IO;
 
-public class DistanceModel(
-    ILogger<DistanceModel> logger,
+public class ClosestModel(
+    ILogger<ClosestModel> logger,
     IConfiguration configuration
-    ): IDistanceModel
+    ): IClosestModel
 {
     /// <summary>
     /// Saves the result from calculation

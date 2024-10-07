@@ -1,9 +1,8 @@
-using Pipos.Common.NetworkUtilities.IO;
 using Pipos.Common.NetworkUtilities.Model;
 
-namespace Pipos.Napier.IO;
+namespace Pipos.Common.NetworkUtilities.IO;
 
-public interface IDistanceModel
+public interface IClosestModel
 {
     /// <summary>
     /// Saves the result from calculation
