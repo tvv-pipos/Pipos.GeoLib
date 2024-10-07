@@ -1,7 +1,8 @@
 using System.Text.Json;
 using Npgsql;
-using Pipos.Common.NetworkUtilities.Model;
-namespace Pipos.Common.NetworkUtilities.IO;
+using Pipos.GeoLib.NetworkUtilities.Model;
+
+namespace Pipos.GeoLib.NetworkUtilities.IO;
 public static class TotalAll
 {
     public static readonly string[] IgnoreColumns = { "tile_250", "pipos_id", "geom"};

@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using System.Buffers;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Pipos.Common.NetworkUtilities.Model;
+using Pipos.GeoLib.NetworkUtilities.Model;
 
-namespace Pipos.Common.NetworkUtilities.Processing;
+namespace Pipos.GeoLib.NetworkUtilities.Processing;
 
 public class Voronoi
 {

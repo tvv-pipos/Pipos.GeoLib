@@ -1,6 +1,7 @@
-using Pipos.Common.NetworkUtilities.Processing;
-using Pipos.Common.NetworkUtilities.Model;
 using System.Diagnostics;
+using Pipos.GeoLib.NetworkUtilities.Model;
+
+namespace Pipos.GeoLib.NetworkUtilities.Processing;
 
 public static class GraphOptimizer
 {
@@ -93,10 +94,10 @@ public static class GraphOptimizer
                     /* TODO: Find other edge */
                     if (rightNode.Edges.Any(x => x.GetOtherNode(rightNode) == leftNode))
                     {
-                         // Remove other edge
-                         leftNode.Edges.Remove(leftEdge);
-                         leftEdge.Source = null!;
-                         leftEdge.Target = null!;
+                        // Remove other edge
+                        leftNode.Edges.Remove(leftEdge);
+                        leftEdge.Source = null!;
+                        leftEdge.Target = null!;
                     }
                     else
                     {

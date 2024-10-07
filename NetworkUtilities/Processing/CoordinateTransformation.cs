@@ -1,7 +1,7 @@
 using ProjNet;
 using ProjNet.CoordinateSystems;
 
-namespace Pipos.Common.NetworkUtilities.Processing;
+namespace Pipos.GeoLib.NetworkUtilities.Processing;
 
 public class CoordinateTransformation
 {

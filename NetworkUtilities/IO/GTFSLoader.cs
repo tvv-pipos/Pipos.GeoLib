@@ -1,11 +1,11 @@
-using Pipos.Common.NetworkUtilities.Model;
-using System.IO.Compression;
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
-using Pipos.Common.NetworkUtilities.Processing;
+using System.IO.Compression;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+using Pipos.GeoLib.NetworkUtilities.Model;
+using Pipos.GeoLib.NetworkUtilities.Processing;
 
-namespace Pipos.Common.NetworkUtilities.IO;
+namespace Pipos.GeoLib.NetworkUtilities.IO;
 
 public class GTFSLoader
 {   

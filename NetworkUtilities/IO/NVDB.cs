@@ -1,10 +1,9 @@
 using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
 using Npgsql;
-using Pipos.Common.NetworkUtilities.Model;
+using Pipos.GeoLib.NetworkUtilities.Model;
 
-namespace Pipos.Common.NetworkUtilities.IO;
+namespace Pipos.GeoLib.NetworkUtilities.IO;
 
 public static class NVDB
 {

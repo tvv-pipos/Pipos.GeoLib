@@ -1,7 +1,4 @@
-namespace Pipos.Common.NetworkUtilities.Processing;
-
-using System;
-using System.Collections.Generic;
+namespace Pipos.GeoLib.NetworkUtilities.Processing;
 
 // Static 2d spatial index implemented using packed Hilbert R-tree.
 public class KDIndex

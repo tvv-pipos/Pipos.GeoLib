@@ -1,9 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using NetTopologySuite.Operation.Distance;
-using Pipos.Common.NetworkUtilities.Model;
+﻿using System.Diagnostics;
+using Pipos.GeoLib.NetworkUtilities.Model;
 
-namespace Pipos.Common.NetworkUtilities.Processing;
+namespace Pipos.GeoLib.NetworkUtilities.Processing;
 
 public class Pipos250Index
 {

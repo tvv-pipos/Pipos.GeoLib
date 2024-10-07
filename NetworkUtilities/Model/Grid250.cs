@@ -1,4 +1,4 @@
-namespace Pipos.Common.NetworkUtilities.Model;
+namespace Pipos.GeoLib.NetworkUtilities.Model;
 
 public static class Grid250
 {

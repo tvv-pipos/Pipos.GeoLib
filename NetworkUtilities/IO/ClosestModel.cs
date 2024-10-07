@@ -3,10 +3,10 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-using Pipos.Common.NetworkUtilities.Model;
-using static Pipos.Common.NetworkUtilities.Model.PiposID;
+using Pipos.GeoLib.NetworkUtilities.Model;
+using static Pipos.GeoLib.NetworkUtilities.Model.PiposID;
 
-namespace Pipos.Common.NetworkUtilities.IO;
+namespace Pipos.GeoLib.NetworkUtilities.IO;
 
 public class ClosestModel(
     ILogger<ClosestModel> logger,

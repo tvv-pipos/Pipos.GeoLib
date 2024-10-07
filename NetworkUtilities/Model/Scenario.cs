@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Pipos.Common.NetworkUtilities.Model;
+namespace Pipos.GeoLib.NetworkUtilities.Model;
 
 public class Scenario
 {

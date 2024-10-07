@@ -1,11 +1,10 @@
-using Pipos.Common.NetworkUtilities.Model;
 using System.Globalization;
 using System.Text;
 using Npgsql;
+using Pipos.GeoLib.NetworkUtilities.Model;
+using static Pipos.GeoLib.NetworkUtilities.Model.PiposID;
 
-using static Pipos.Common.NetworkUtilities.Model.PiposID;
-
-namespace Pipos.Common.NetworkUtilities.IO;
+namespace Pipos.GeoLib.NetworkUtilities.IO;
 
 public static class LogsumModel
 {

@@ -1,9 +1,9 @@
 using System.Diagnostics;
+using Pipos.GeoLib.NetworkUtilities.Model;
+using Pipos.GeoLib.NetworkUtilities.Processing;
 using RoutingKit;
-using Pipos.Common.NetworkUtilities.Model;
-using Pipos.Common.NetworkUtilities.Processing;
 
-namespace Pipos.Common.NetworkUtilities.IO;
+namespace Pipos.GeoLib.NetworkUtilities.IO;
 
 public static class Network
 {

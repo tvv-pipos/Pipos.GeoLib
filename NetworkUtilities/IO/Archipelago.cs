@@ -1,5 +1,6 @@
 using Npgsql;
-namespace Pipos.Common.NetworkUtilities.IO;
+
+namespace Pipos.GeoLib.NetworkUtilities.IO;
 
 public static class Archipelago
 {

@@ -1,4 +1,4 @@
-namespace Pipos.Common.NetworkUtilities.Processing;
+namespace Pipos.GeoLib.NetworkUtilities.Processing;
 
 public class MinHeap<T> where T : IComparable<T>
 {

@@ -1,8 +1,8 @@
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.Json;
 using Npgsql;
-using Pipos.Common.NetworkUtilities.Model;
-namespace Pipos.Common.NetworkUtilities.IO;
+using Pipos.GeoLib.NetworkUtilities.Model;
+
+namespace Pipos.GeoLib.NetworkUtilities.IO;
 
 public class Sampers
 {
