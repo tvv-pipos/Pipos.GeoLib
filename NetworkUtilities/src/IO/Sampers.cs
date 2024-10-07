@@ -1,3 +1,5 @@
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
 using Npgsql;
 using Pipos.Common.NetworkUtilities.Model;
 namespace Pipos.Common.NetworkUtilities.IO;
@@ -37,10 +39,17 @@ public class Sampers
     public static string TuristPun = "turist_pun";
     public static string TuristOm1 = "turist_om1";
 
-    private static readonly string[] IgnoreColumns = { "tile_250", "pipos_id", "geom", "id1" };
+    private static readonly string[] IgnoreColumns = { "tile_250", "pipos_id", "geom", "id1", "id", "fid", "id1", "area1", "id2", "vattenarea", "fhusyta", "density", "lan_c", "ikea", "uni_ort", "l_nr", "turistomr_", "turistpunk", "turist_omr", "turist_pun", "turist_om1" };
 
-    public async static Task<DataMatrix> Read(string connectionString)
+    public async static Task<DataMatrix> Read(string connectionString, Scenario scenario)
     {
+        string filename = $"{Settings.PiposDataSharePath}/0/Sampers.json";
+        if(File.Exists(filename))
+        {
+            string json = File.ReadAllText(filename);
+            return new DataMatrix(JsonSerializer.Deserialize<Dictionary<int, Dictionary<string, float>>>(json)!);
+        }
+
         Dictionary<int, Dictionary<string, float>> data = new Dictionary<int, Dictionary<string, float>>();
 
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
@@ -87,6 +96,11 @@ public class Sampers
                 data.Add(piposId[i], row);
             }
         }
+
+        string json_out = JsonSerializer.Serialize(data);
+        Directory.CreateDirectory(Path.GetDirectoryName(filename)!);
+        File.WriteAllText(filename, json_out);
+
         return new DataMatrix(data);
     }
 }

@@ -9,9 +9,9 @@ namespace Pipos.Common.NetworkUtilities.IO;
 
 public static class IndexModel
 {
-    public static void SaveResult(int scenario_id, string transportmodel, PiposPath.Storage storage, int[] startId, Dictionary<string, float[]> result)
+    public static void SaveResult(Scenario scenario, string transportmodel, PiposPath.Storage storage, int[] startId, Dictionary<string, float[]> result)
     {
-        var (path, name) = PiposPath.GetIndex(scenario_id, transportmodel, storage);
+        var (path, name) = PiposPath.GetIndex(scenario, transportmodel, storage);
         if (storage == PiposPath.Storage.File)
             SaveResultToFile(path, name, startId, result);
         else

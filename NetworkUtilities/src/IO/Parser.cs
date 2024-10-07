@@ -51,7 +51,7 @@ public static class Parser
             if (timeForward >= 1000000 && forwardSpeed > 6)
                 timeForward = 1;
 
-                var edge = new Edge(source, target, distance, forwardSpeed, backwardSpeed, timeForward, timeBackward);
+            var edge = new Edge(source, target, distance, forwardSpeed, backwardSpeed, timeForward, timeBackward);
             source.Edges.Add(edge);
             target.Edges.Add(edge);
             nodes.Add(target);
