@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkUtilities", "NetworkUtilities\NetworkUtilities.csproj", "{BF9A1E5F-1E27-4B49-A444-5387E2BEC227}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoutingKit", "RoutingKit.NET\src\RoutingKit\RoutingKit.csproj", "{5AD99D03-2BEF-4804-899F-B3AE0F3AD278}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF9A1E5F-1E27-4B49-A444-5387E2BEC227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF9A1E5F-1E27-4B49-A444-5387E2BEC227}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF9A1E5F-1E27-4B49-A444-5387E2BEC227}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF9A1E5F-1E27-4B49-A444-5387E2BEC227}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AD99D03-2BEF-4804-899F-B3AE0F3AD278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AD99D03-2BEF-4804-899F-B3AE0F3AD278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AD99D03-2BEF-4804-899F-B3AE0F3AD278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AD99D03-2BEF-4804-899F-B3AE0F3AD278}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
