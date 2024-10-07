@@ -34,8 +34,9 @@ public static class ActivityTile
     /// </summary>
     /// <param name="connectionString"></param>
     /// <param name="scenario"></param>
+    /// <param name="extraConditions"></param>
     /// <returns></returns>
-    public static async Task<List<int>> ReadPopulationTilesFromDb(string connectionString, Scenario scenario)
+    public static async Task<List<int>> ReadPopulationTilesFromDb(string connectionString, Scenario scenario, string? extraConditions = null)
     {
         var filename = $"{Settings.PiposDataSharePath}/{scenario.ActivityTile}/ReadPopulationTilesFromDb.json";
         if (File.Exists(filename))
@@ -47,13 +48,11 @@ public static class ActivityTile
         var result = new List<int>();
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
 
-        const string conditions = @"ST_Within(geom, ST_SetSRID(ST_GeomFromGeoJSON('{""type"":""Polygon"",""coordinates"":
-            [[[486248.1392901975,6986069.3667322695],[486771.8206407295,6985103.734646607],[487283.3937519428,6985591.091279183],
-            [486605.33235009795,6986314.558578473],[486248.1392901975,6986069.3667322695]]]}'), 0))";
+        extraConditions = extraConditions != null ? $"AND {extraConditions}" : string.Empty;
         var query = $"""
                      SELECT pipos_id
                      FROM scenario{scenario.ActivityTile}_pd.total_all
-                     WHERE (pop_male > 0 or pop_female > 0 or pop_work > 0 or synt_pop_touristbeds > 0) and {conditions}
+                     WHERE (pop_male > 0 or pop_female > 0 or pop_work > 0 or synt_pop_touristbeds > 0) {extraConditions}
                      ORDER BY pipos_id
                      """;
         

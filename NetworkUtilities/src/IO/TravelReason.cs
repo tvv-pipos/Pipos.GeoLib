@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Npgsql;
 using Pipos.Common.NetworkUtilities.Model;
+
 namespace Pipos.Common.NetworkUtilities.IO;
 public static class TravelReason
 {
@@ -74,8 +75,9 @@ public static class TravelReason
     /// </summary>
     /// <param name="connectionString"></param>
     /// <param name="scenario"></param>
+    /// <param name="extraConditions"></param>
     /// <returns></returns>
-    public static async Task<TravelReasons> ReadTravelReasons(string connectionString, Scenario scenario)
+    public static async Task<TravelReasons> ReadTravelReasons(string connectionString, Scenario scenario, string? extraConditions = null)
     {
         var filename = $"{Settings.PiposDataSharePath}/{scenario.ActivityTile}/ReadTravelReasons.json";
         if (File.Exists(filename))
@@ -86,10 +88,8 @@ public static class TravelReason
         }
 
         var tr = new TravelReasons();
-        const string conditions = @"ST_Within(geom, ST_SetSRID(ST_GeomFromGeoJSON('{""type"":""Polygon"",""coordinates"":
-            [[[489109.27917894686,6995947.364573294],[490593.49354063766,6993411.554385832],[492989.5346626497,6993478.111083665],
-            [490560.2151917208,6996779.323296214],[489109.27917894686,6995947.364573294]]]}'), 3006))";
-        var query = $"SELECT * FROM scenario{scenario.ActivityTile}_tr.tr_total_all WHERE {conditions} ORDER BY pipos_id";
+        extraConditions = extraConditions != null ? $"WHERE {extraConditions}" : string.Empty;
+        var query = $"SELECT * FROM scenario{scenario.ActivityTile}_tr.tr_total_all {extraConditions} ORDER BY pipos_id";
 
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
         await using (var cmd = dataSource.CreateCommand(query))
@@ -111,21 +111,21 @@ public static class TravelReason
             while (await dataReader.ReadAsync())
             {
                 for (var i = 0; i < dataReader.FieldCount; i++)
-            {
-                if (!IgnoreColumns.Contains(dataReader.GetName(i)))
                 {
-                    tmpData[i].Add(dataReader.GetFloat(i));
-                }
-                if (dataReader.GetName(i).Equals("pipos_id"))
-                {
-                    tmpId.Add(dataReader.GetInt32(i));
+                    if (!IgnoreColumns.Contains(dataReader.GetName(i)))
+                    {
+                        tmpData[i].Add(dataReader.GetFloat(i));
+                    }
+                    if (dataReader.GetName(i).Equals("pipos_id"))
+                    {
+                        tmpId.Add(dataReader.GetInt32(i));
+                    }
                 }
             }
-        }
 
             tr.PiposId = tmpId.ToArray();
             foreach (var (name, index) in attributeMap)
-        {
+            {
                 tr.Data.Add(name, tmpData[index].ToArray());
             }
         }
@@ -162,13 +162,13 @@ public static class TravelReason
             while (await dataReader.ReadAsync())
             {
                 for (var i = 0; i < dataReader.FieldCount; i++)
-            {
-                if (dataReader.GetName(i).Equals("pipos_id"))
                 {
-                        piposIds.Add(dataReader.GetInt32(i));
+                    if (dataReader.GetName(i).Equals("pipos_id"))
+                    {
+                            piposIds.Add(dataReader.GetInt32(i));
+                    }
                 }
             }
-        }
         }
 
         var jsonOut = JsonSerializer.Serialize(piposIds);
