@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Pipos.GeoLib.Core/Pipos.GeoLib.Core.csproj" />
+  </ItemGroup>
+
 </Project>
