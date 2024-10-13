@@ -1,9 +1,8 @@
-
-using System.Diagnostics;
+using Pipos.GeoLib.Core.Api;
 
 namespace Pipos.GeoLib.Road;
 
-public class QueryOptions
+public class QueryOptions : IQueryOptions
 {
     public bool IncludeConnectionDistance { get; set; }
 
