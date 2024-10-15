@@ -9,13 +9,13 @@ public class Edge
     public Node Source { get; set; }
     public Node Target { get; set; }
     public float Distance { get; set; }
-    public Int32 ForwardSpeed { get; set; }
-    public Int32 BackwardSpeed { get; set; }
+    public byte ForwardSpeed { get; set; }
+    public byte BackwardSpeed { get; set; }
     public YearSet Years { get; set; }
     public Attribute Attribute { get; set; }
     public Segment[] Segments { get; set; }
 
-    public Edge(uint id, Node source, Node target, float distance, Int32 forwardSpeed, Int32 backwardSpeed, float[] segments, YearSet yearSet) 
+    public Edge(uint id, Node source, Node target, float distance, byte forwardSpeed, byte backwardSpeed, float[] segments, Attribute attribute, YearSet yearSet) 
     {
         Id = id;
         Source = source;
@@ -24,7 +24,7 @@ public class Edge
         ForwardSpeed = forwardSpeed;
         BackwardSpeed = backwardSpeed;
         Years = new YearSet(yearSet);
-        Attribute = new Attribute(0);
+        Attribute = attribute;
 
         Int32 seglen = segments.Length / 4;
         Segments = new Segment[seglen];

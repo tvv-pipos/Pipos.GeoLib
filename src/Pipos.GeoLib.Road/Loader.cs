@@ -16,26 +16,24 @@ public class Loader : ILoader
     public ILoader FromFile(string filename, YearSet years)
     {
         oldedges = newedges = 0;
-        using (var stream = File.Open(filename, FileMode.Open))
+        using (var stream = File.Open(filename, FileMode.Open, FileAccess.Read))
         {
             using (var reader = new BinaryReader(stream))
             {
                 uint number = reader.ReadUInt32();
                 if(number == 0x9596)
                 {
-                    uint nodes_length = reader.ReadUInt32();
                     uint edges_length = reader.ReadUInt32();
                     uint segments_length = reader.ReadUInt32();
 
+                    Console.WriteLine($"{edges_length}, {segments_length}");
+
                     for(uint eid = 0; eid < edges_length; eid++)
                     {
-                        uint source_id = reader.ReadUInt32();
-                        uint target_id = reader.ReadUInt32();
-
                         float distance = reader.ReadSingle();
-                        int forward_speed = reader.ReadInt32();
-                        int backward_speed = reader.ReadInt32();
-    
+                        byte forward_speed = reader.ReadByte();
+                        byte backward_speed = reader.ReadByte();
+                        uint attribute = reader.ReadUInt32();
                         uint edge_seg_length = reader.ReadUInt32();
                         float[] segemnts = new float[edge_seg_length * 4];
                         for(uint s = 0; s < edge_seg_length * 4; s++)
@@ -65,7 +63,7 @@ public class Loader : ILoader
                             Nodes.Add(target_pos, targetNode);
                         }
 
-                        Edge edge = new Edge(eid, sourceNode, targetNode, distance, forward_speed, backward_speed, segemnts, years);
+                        Edge edge = new Edge(eid, sourceNode, targetNode, distance, forward_speed, backward_speed, segemnts, new Attribute(attribute), years);
 
                         if(nodesExists)
                         {
@@ -109,5 +107,10 @@ public class Loader : ILoader
     public INetworkManager BuildNetworkManager()
     {
         return new NetworkManager(new Network(new ConnectionIndexBuilder((uint)Segments.Count).AddSegments(Segments).Build()));
+    }
+
+    public void ExportToBinaryFile()
+    {
+
     }
 }
