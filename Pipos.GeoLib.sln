@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pipos.GeoLib.Road", "src\Pi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pipos.GeoLib.Walk", "src\Pipos.GeoLib.Walk\Pipos.GeoLib.Walk.csproj", "{6319675F-3594-45B7-9037-5625D927D1D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{211AE0DE-67F9-4EF6-8E84-40B6BC9A90D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{6319675F-3594-45B7-9037-5625D927D1D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6319675F-3594-45B7-9037-5625D927D1D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6319675F-3594-45B7-9037-5625D927D1D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{211AE0DE-67F9-4EF6-8E84-40B6BC9A90D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{211AE0DE-67F9-4EF6-8E84-40B6BC9A90D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{211AE0DE-67F9-4EF6-8E84-40B6BC9A90D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{211AE0DE-67F9-4EF6-8E84-40B6BC9A90D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2D8B7A49-1CEB-481A-A9C2-F444852DC7B9} = {F9FE6DCE-77AD-4E8A-A4B9-95080374A6D9}
