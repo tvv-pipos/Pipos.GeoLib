@@ -9,7 +9,7 @@ internal static class ShortestDistanceWithTime
     internal static ITimeDistanceResult Query(Connection start, Connection end, Year year, QueryOptions options)
     {        
         var result = FindSingleEdgeDistance(start, end, options);
-        if(result.Found)
+        if(result.HasResult)
         {
             return new TimeDistanceResult{Distance = result.Distance, Time = result.Time};
         }
@@ -17,7 +17,10 @@ internal static class ShortestDistanceWithTime
         PriorityQueue<Node, float> queue = new PriorityQueue<Node, float>();
         Dictionary<uint, TimeDistanceResult> weights = new Dictionary<uint, TimeDistanceResult>();
         
-        StartWeightsDistanceWithTime(start, weights, queue, options);
+        if(!StartWeightsDistanceWithTime(start, weights, queue, options))
+        {
+            return TimeDistanceResult.NoResult;
+        }
 
         while (queue.TryDequeue(out Node? current, out float distance)) 
         {

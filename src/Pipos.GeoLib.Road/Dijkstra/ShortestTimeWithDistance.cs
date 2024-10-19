@@ -9,7 +9,7 @@ internal static class ShortestTimeWithDistance
     internal static ITimeDistanceResult Query(Connection start, Connection end, Year year, QueryOptions options)
     {        
         var result = FindSingleEdgeTime(start, end, options);
-        if(result.Found)
+        if(result.HasResult)
         {
             return new TimeDistanceResult{Distance = result.Distance, Time = result.Time};
         }

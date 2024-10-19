@@ -11,14 +11,23 @@ internal static class NetworkUtils
      
     internal class SingleEdgeResult
     {
-        public bool Found { get; set; }
+        public bool HasResult { get; set; }
         public float Distance { get; set; }
         public float Time { get; set; }
     }
 
+    internal class SingleEdgeWithLineStringResult
+    {
+        public bool HasResult { get; set; }
+        public float Distance { get; set; }
+        public float Time { get; set; }
+        public LineString LineString { get; set; } = LineString.Empty;
+    }
+
+
     internal static SingleEdgeResult FindSingleEdgeDistance(Connection start, Connection end, QueryOptions options)
     {
-        SingleEdgeResult result = new SingleEdgeResult{Found = false};
+        SingleEdgeResult result = new SingleEdgeResult{HasResult = false};
         foreach(ConnectionPoint startP in start)
         {
             foreach(ConnectionPoint endP in end)
@@ -31,7 +40,7 @@ internal static class NetworkUtils
                     if(start_edge == end_edge)
                     {
                         var tmp = ShortestDistanceTimeSingleEdgePoints(startP, endP, start_edge, options);
-                        if(tmp.Found && (!result.Found || (result.Found && result.Distance > tmp.Distance)))
+                        if(tmp.HasResult && (!result.HasResult || (result.HasResult && result.Distance > tmp.Distance)))
                             result = tmp;
                     }
                 }
@@ -42,7 +51,7 @@ internal static class NetworkUtils
 
     internal static SingleEdgeResult FindSingleEdgeTime(Connection start, Connection end, QueryOptions options)
     {
-        SingleEdgeResult result = new SingleEdgeResult{Found = false};
+        SingleEdgeResult result = new SingleEdgeResult{HasResult = false};
         foreach(ConnectionPoint startP in start)
         {
             foreach(ConnectionPoint endP in end)
@@ -55,7 +64,7 @@ internal static class NetworkUtils
                     if(start_edge == end_edge)
                     {
                         var tmp = ShortestDistanceTimeSingleEdgePoints(startP, endP, start_edge, options);
-                        if(tmp.Found && (!result.Found || (result.Found && result.Time > tmp.Time)))
+                        if(tmp.HasResult && (!result.HasResult || (result.HasResult && result.Time > tmp.Time)))
                             result = tmp;
                     }
                 }
@@ -65,10 +74,9 @@ internal static class NetworkUtils
     } 
 
 
-    internal static LineString? FindSingleEdgeDistanceLineString(Connection start, Connection end, QueryOptions options)
+    internal static SingleEdgeWithLineStringResult FindSingleEdgeDistanceLineString(Connection start, Connection end, QueryOptions options)
     {
-        SingleEdgeResult result = new SingleEdgeResult{Found = false};
-        LineString? ls = null;
+        SingleEdgeWithLineStringResult result = new SingleEdgeWithLineStringResult{HasResult = false};
         foreach(ConnectionPoint startP in start)
         {
             foreach(ConnectionPoint endP in end)
@@ -81,28 +89,29 @@ internal static class NetworkUtils
                     if(start_edge == end_edge)
                     {
                         var tmp = ShortestDistanceTimeSingleEdgePoints(startP, endP, start_edge, options);
-                        if(tmp.Found && (!result.Found || (result.Found && result.Distance > tmp.Distance)))
+                        if(tmp.HasResult && (!result.HasResult || (result.HasResult && result.Distance > tmp.Distance)))
                         {
-                            result = tmp;
+                            result.HasResult = tmp.HasResult;
+                            result.Distance = tmp.Distance;
+                            result.Time = tmp.Time;
                             if(options.IncludeConnectionDistance)
                             {
-                                ls = new LineString([new Coordinate(startP.SearchX, startP.SearchY), new Coordinate(startP.X, startP.Y), new Coordinate(endP.X, endP.Y), new Coordinate(endP.SearchX, endP.SearchY)]);
+                                result.LineString = new LineString([new Coordinate(startP.SearchX, startP.SearchY), new Coordinate(startP.X, startP.Y), new Coordinate(endP.X, endP.Y), new Coordinate(endP.SearchX, endP.SearchY)]);
                             }
                             else
                             {
-                                ls = new LineString([new Coordinate(startP.X, startP.Y), new Coordinate(endP.X, endP.Y)]);
+                                result.LineString = new LineString([new Coordinate(startP.X, startP.Y), new Coordinate(endP.X, endP.Y)]);
                             }
                         }
                     }
                 }
             }
         }
-        return ls;
+        return result;
     } 
-    internal static LineString? FindSingleEdgeTimeLineString(Connection start, Connection end, QueryOptions options)
+    internal static SingleEdgeWithLineStringResult FindSingleEdgeTimeLineString(Connection start, Connection end, QueryOptions options)
     {
-        SingleEdgeResult result = new SingleEdgeResult{Found = false};
-        LineString? ls = null;
+        SingleEdgeWithLineStringResult result = new SingleEdgeWithLineStringResult{HasResult = false};
         foreach(ConnectionPoint startP in start)
         {
             foreach(ConnectionPoint endP in end)
@@ -115,28 +124,30 @@ internal static class NetworkUtils
                     if(start_edge == end_edge)
                     {
                         var tmp = ShortestDistanceTimeSingleEdgePoints(startP, endP, start_edge, options);
-                        if(tmp.Found && (!result.Found || (result.Found && result.Distance > tmp.Distance)))
+                        if(tmp.HasResult && (!result.HasResult || (result.HasResult && result.Distance > tmp.Distance)))
                         {
-                            result = tmp;
+                            result.HasResult = tmp.HasResult;
+                            result.Distance = tmp.Distance;
+                            result.Time = tmp.Time;
                             if(options.IncludeConnectionDistance)
                             {
-                                ls = new LineString([new Coordinate(startP.SearchX, startP.SearchY), new Coordinate(startP.X, startP.Y), new Coordinate(endP.X, endP.Y), new Coordinate(endP.SearchX, endP.SearchY)]);
+                                result.LineString = new LineString([new Coordinate(startP.SearchX, startP.SearchY), new Coordinate(startP.X, startP.Y), new Coordinate(endP.X, endP.Y), new Coordinate(endP.SearchX, endP.SearchY)]);
                             }
                             else
                             {
-                                ls = new LineString([new Coordinate(startP.X, startP.Y), new Coordinate(endP.X, endP.Y)]);
+                                result.LineString = new LineString([new Coordinate(startP.X, startP.Y), new Coordinate(endP.X, endP.Y)]);
                             }
                         }
                     }
                 }
             }
         }
-        return ls;
+        return result;
     } 
 
     internal static bool StartWeightsDistance(Connection start, Dictionary<uint, float> weights, PriorityQueue<Node, float> queue, QueryOptions options)
     {
-        bool found = false;
+        bool HasResult = false;
         foreach(ConnectionPoint startP in start)
         {
             float connectionDistance = 0.0f;
@@ -153,22 +164,22 @@ internal static class NetworkUtils
                 {
                     weights[edge.Source.Id] = startP.SourceDistance + connectionDistance;
                     queue.Enqueue(edge.Source, weights[edge.Source.Id]);
-                    found = true;
+                    HasResult = true;
                 }
 
                 if(edge.ForwardSpeed > 0.0f)
                 {
                     weights[edge.Target.Id] = startP.TargetDistance + connectionDistance;
                     queue.Enqueue(edge.Target, weights[edge.Target.Id]);
-                    found = true;
+                    HasResult = true;
                 }
             }
         }
-        return found;
+        return HasResult;
     }
     internal static bool StartWeightsTime(Connection start, Dictionary<uint, float> weights, PriorityQueue<Node, float> queue, QueryOptions options)
     {
-        bool found = false;
+        bool HasResult = false;
         foreach(ConnectionPoint startP in start)
         {
             float connectionTime = 0.0f;
@@ -185,23 +196,23 @@ internal static class NetworkUtils
                 {
                     weights[edge.Source.Id] = (TimeUnitConversion * startP.SourceDistance / (float)edge.BackwardSpeed) + connectionTime;
                     queue.Enqueue(edge.Source, weights[edge.Source.Id]);
-                    found = true;
+                    HasResult = true;
                 }
 
                 if(edge.ForwardSpeed > 0.0f)
                 {
                     weights[edge.Target.Id] = (TimeUnitConversion * startP.TargetDistance / (float)edge.ForwardSpeed) + connectionTime;
                     queue.Enqueue(edge.Target, weights[edge.Target.Id]);
-                    found = true;
+                    HasResult = true;
                 }
             }
         }
-        return found;
+        return HasResult;
     }
 
     internal static bool StartWeightsDistanceWithTime(Connection start, Dictionary<uint, TimeDistanceResult> weights, PriorityQueue<Node, float> queue, QueryOptions options)
     {
-        bool found = false;
+        bool HasResult = false;
         foreach(ConnectionPoint startP in start)
         {
             float connectionDistance = 0.0f;
@@ -222,7 +233,7 @@ internal static class NetworkUtils
                     float time = (TimeUnitConversion * startP.SourceDistance / (float)edge.BackwardSpeed) + connectionTime;
                     weights[edge.Source.Id] = new TimeDistanceResult{Distance = distance, Time = time};
                     queue.Enqueue(edge.Source, weights[edge.Source.Id].Distance);
-                    found = true;
+                    HasResult = true;
                 }
 
                 if(edge.ForwardSpeed > 0.0f)
@@ -231,16 +242,16 @@ internal static class NetworkUtils
                     float time = (TimeUnitConversion * startP.TargetDistance / (float)edge.ForwardSpeed) + connectionTime;
                     weights[edge.Target.Id] = new TimeDistanceResult{Distance = distance, Time = time};
                     queue.Enqueue(edge.Target, weights[edge.Target.Id].Distance);
-                    found = true;
+                    HasResult = true;
                 }
             }
         }
-        return found;
+        return HasResult;
     }
 
     internal static bool StartWeightsTimeWithDistance(Connection start, Dictionary<uint, TimeDistanceResult> weights, PriorityQueue<Node, float> queue, QueryOptions options)
     {
-        bool found = false;
+        bool HasResult = false;
         foreach(ConnectionPoint startP in start)
         {
             float connectionDistance = 0.0f;
@@ -261,7 +272,7 @@ internal static class NetworkUtils
                     float time = (TimeUnitConversion * startP.SourceDistance / (float)edge.BackwardSpeed) + connectionTime;
                     weights[edge.Source.Id] = new TimeDistanceResult{Distance = distance, Time = time};
                     queue.Enqueue(edge.Source, weights[edge.Source.Id].Time);
-                    found = true;
+                    HasResult = true;
                 }
 
                 if(edge.ForwardSpeed > 0.0f)
@@ -270,11 +281,11 @@ internal static class NetworkUtils
                     float time = (TimeUnitConversion * startP.TargetDistance / (float)edge.ForwardSpeed) + connectionTime;
                     weights[edge.Target.Id] = new TimeDistanceResult{Distance = distance, Time = time};
                     queue.Enqueue(edge.Target, weights[edge.Target.Id].Time);
-                    found = true;
+                    HasResult = true;
                 }
             }
         }
-        return found;
+        return HasResult;
     }
 
     internal static SingleEdgeResult ShortestDistanceTimeSingleEdgePoints(ConnectionPoint start, ConnectionPoint end, Edge edge, QueryOptions options)
@@ -300,7 +311,7 @@ internal static class NetworkUtils
                     time += ct;
                 }
 
-                return new SingleEdgeResult{Found = true, Distance = distance, Time = time};
+                return new SingleEdgeResult{HasResult = true, Distance = distance, Time = time};
             }
             else if(ds > de && edge.BackwardSpeed > 0)
             {
@@ -314,7 +325,7 @@ internal static class NetworkUtils
                     time += ct;
                 }
 
-                return new SingleEdgeResult{Found = true, Distance = distance, Time = time};
+                return new SingleEdgeResult{HasResult = true, Distance = distance, Time = time};
             }
         }
         else 
@@ -368,7 +379,7 @@ internal static class NetworkUtils
                     time += ct;
                 }
 
-                return new SingleEdgeResult{Found = true, Distance = distance, Time = time};
+                return new SingleEdgeResult{HasResult = true, Distance = distance, Time = time};
             }
             else if (!forward && edge.BackwardSpeed > 0)
             {
@@ -385,11 +396,11 @@ internal static class NetworkUtils
                     time += ct;
                 }
 
-                return new SingleEdgeResult{Found = true, Distance = distance, Time = time};
+                return new SingleEdgeResult{HasResult = true, Distance = distance, Time = time};
             }
         }
 
-        return new SingleEdgeResult{Found = false};
+        return new SingleEdgeResult{HasResult = false};
     }
 
     internal static (float, float) ConnectionDistanceTime(ConnectionPoint start, ConnectionPoint end, float speed)
@@ -622,9 +633,11 @@ internal static class NetworkUtils
         }
         return null;
     }
-    internal static (Node?, ConnectionPoint?) EndWeightsDistanceNode(Connection end, Dictionary<uint, float> weights, QueryOptions options)
+
+    internal static ILineStringResult EndWeightsTimeNode(Connection start, Connection end, Dictionary<uint, TimeDistanceResult> weights, Dictionary<uint, Edge> edges, QueryOptions options)
     {
         float min = float.MaxValue;
+        float distance = 0;
         Node? node = null;
         ConnectionPoint? cp = null;
         foreach(ConnectionPoint endP in end)
@@ -633,61 +646,21 @@ internal static class NetworkUtils
             {
                 var end_edge = endP.Segment.Edge;
                 float connectionDistance = 0.0f;
-
-                if(options.IncludeConnectionDistance)
-                {
-                    connectionDistance = endP.GetConnectionDistance();
-                }
-
-                if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
-                {
-                    float tmp = source + endP.SourceDistance + connectionDistance;
-                    if(tmp < min) 
-                    {
-                        min = tmp;
-                        node = end_edge.Source;
-                        cp = endP;
-                    }
-                }
-
-                if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
-                {
-                    float tmp = target + endP.TargetDistance + connectionDistance;
-                    if(tmp < min) 
-                    {
-                        min = tmp;
-                        node = end_edge.Target;
-                        cp = endP;
-                    }
-                }
-            }
-        }
-        return (node, cp);
-    }
-
-    internal static (Node?, ConnectionPoint?) EndWeightsTimeNode(Connection end, Dictionary<uint, float> weights, QueryOptions options)
-    {
-        float min = float.MaxValue;
-        Node? node = null;
-        ConnectionPoint? cp = null;
-        foreach(ConnectionPoint endP in end)
-        {
-            if(endP.Segment != null)
-            {
-                var end_edge = endP.Segment.Edge;
                 float connectionTime = 0.0f;
 
                 if(options.IncludeConnectionDistance)
                 {
+                    connectionDistance = endP.GetConnectionDistance();
                     connectionTime = TimeUnitConversion * endP.GetConnectionDistance() / options.ConnectionSpeed;
                 }
 
                 if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
                 {
-                    var tmp = source + (TimeUnitConversion * endP.SourceDistance / (float)end_edge.ForwardSpeed) + connectionTime;
+                    var tmp = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)end_edge.ForwardSpeed) + connectionTime;
                     if(tmp < min) 
                     {
                         min = tmp;
+                        distance = source.Distance + endP.SourceDistance + connectionDistance;
                         node = end_edge.Source;
                         cp = endP;
                     }
@@ -695,16 +668,126 @@ internal static class NetworkUtils
 
                 if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
                 {
-                    var tmp = target + (TimeUnitConversion *  endP.TargetDistance / (float)end_edge.BackwardSpeed) + connectionTime;
+                    var tmp = target.Time + (TimeUnitConversion *  endP.TargetDistance / (float)end_edge.BackwardSpeed) + connectionTime;
                     if(tmp < min) 
                     {
                         min = tmp;
+                        distance =  target.Distance + endP.TargetDistance + connectionDistance;
                         node = end_edge.Target;
                         cp = endP;
                     }
                 }
             }
         }
-        return (node, cp);
+        List<Coordinate> line = new List<Coordinate>();
+
+        if(node == null || cp == null)
+            return LineStringResult.NoResult;
+
+        if(options.IncludeConnectionDistance)
+            line.Add(new Coordinate(cp.SearchX, cp.SearchY));
+            
+        cp.AddEndSegment(line, node);
+
+        while(edges.TryGetValue(node.Id, out var nextEdge))
+        {
+            nextEdge.AddSegment(line, node);
+            node = nextEdge.GetOther(node);
+        }
+
+        var startPoint = StartWeightsNode(start, node);
+        if(startPoint == null)
+            return LineStringResult.NoResult;
+
+        startPoint.AddStartSegment(line, node);
+
+        if(options.IncludeConnectionDistance)
+            line.Add(new Coordinate(startPoint.SearchX, startPoint.SearchY));
+    
+        line.Reverse();
+        return new LineStringResult{ 
+            HasResult = true, 
+            LineString = new LineString(line.ToArray()),
+            Time = min, 
+            Distance = distance};
+    }
+
+    internal static ILineStringResult EndWeightsDistanceNode(Connection start, Connection end, Dictionary<uint, TimeDistanceResult> weights, Dictionary<uint, Edge> edges, QueryOptions options)
+    {
+        float min = float.MaxValue;
+        float time = 0;
+        Node? node = null;
+        ConnectionPoint? cp = null;
+
+        foreach(ConnectionPoint endP in end)
+        {
+            if(endP.Segment != null)
+            {
+                var end_edge = endP.Segment.Edge;
+                float connectionDistance = 0.0f;
+                float connectionTime = 0.0f;
+
+                if(options.IncludeConnectionDistance)
+                {
+                    connectionDistance = endP.GetConnectionDistance();
+                    connectionTime = TimeUnitConversion * endP.GetConnectionDistance() / options.ConnectionSpeed;
+                }
+
+                if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
+                {
+                    float tmp = source.Distance + endP.SourceDistance + connectionDistance;
+                    if(tmp < min) 
+                    {
+                        min = tmp;
+                        time = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)end_edge.ForwardSpeed) + connectionTime;
+                        node = end_edge.Source;
+                        cp = endP;
+                    }
+                }
+
+                if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
+                {
+                    float tmp = target.Distance + endP.TargetDistance + connectionDistance;
+                    if(tmp < min) 
+                    {
+                        min = tmp;
+                        time = target.Time + (TimeUnitConversion * endP.TargetDistance / (float)end_edge.BackwardSpeed) + connectionTime;
+                        node = end_edge.Target;
+                        cp = endP;
+                    }
+                }
+            }
+        }
+        List<Coordinate> line = new List<Coordinate>();
+
+        if(node == null || cp == null)
+            return LineStringResult.NoResult;
+
+        if(options.IncludeConnectionDistance)
+            line.Add(new Coordinate(cp.SearchX, cp.SearchY));
+            
+        cp.AddEndSegment(line, node);
+
+        while(edges.TryGetValue(node.Id, out var nextEdge))
+        {
+            nextEdge.AddSegment(line, node);
+            node = nextEdge.GetOther(node);
+        }
+
+        var startPoint = StartWeightsNode(start, node);
+        if(startPoint == null)
+            return LineStringResult.NoResult;
+
+        startPoint.AddStartSegment(line, node);
+
+        if(options.IncludeConnectionDistance)
+            line.Add(new Coordinate(startPoint.SearchX, startPoint.SearchY));
+    
+        line.Reverse();
+        return new LineStringResult{ 
+            HasResult = true, 
+            LineString = new LineString(line.ToArray()),
+            Time = time, 
+            Distance = min};
     }
 }

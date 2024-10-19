@@ -8,7 +8,7 @@ internal static class ShortestDistance
     internal static DistanceResult Query(Connection start, Connection end, Year year, QueryOptions options)
     {        
         var result = FindSingleEdgeDistance(start, end, options);
-        if(result.Found)
+        if(result.HasResult)
         {
             return new DistanceResult{ Distance = result.Distance, HasResult = true };
         }
