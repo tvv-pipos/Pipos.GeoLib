@@ -82,7 +82,7 @@ public class NetworkTest
             }
         }
 
-        var result = network.FindWithinTime(visby, 180, year, null!);
+        var result = network.FindWithinTime(visby, 180, year, new QueryOptions());
         Assert.That(result.HasResult, Is.True);
         
         var totalDistances = 0;
