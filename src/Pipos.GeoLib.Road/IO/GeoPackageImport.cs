@@ -136,7 +136,7 @@ public class GeoPackageImport
                             continue;
                         }
 
-                        int index = (i-1) * 4;
+                        int index = (i - 1) * 4;
                         segments.Add(prevX);
                         segments.Add(prevY);
                         segments.Add(x);
@@ -148,18 +148,18 @@ public class GeoPackageImport
 
                     Edge edge = new Edge(EdgeCount, sourceNode, targetNode, extlen, f_hogst_225, b_hogst_225, segments.ToArray(), attribute, years);
 
-                    if(nodesExists)
+                    if (nodesExists)
                     {
-                        foreach(Edge e in sourceNode.Edges)
+                        foreach (Edge e in sourceNode.Edges)
                         {
-                            if(e.Equals(edge))
+                            if (e.IsSame(edge))
                             {
                                 edgeExists = true;
                             }
                         }
                     }
 
-                    if(edgeExists)
+                    if (edgeExists)
                     {
                         continue;
                     }
@@ -184,16 +184,16 @@ public class GeoPackageImport
 
     public void ExportToBinaryFile(string path)
     {
-        System.Console.WriteLine($"{NodeCount}, {EdgeCount}, {SegmentCount}");
+        System.Console.WriteLine($"{NodeCount}, {Edges.Count}, {SegmentCount}");
 
         UInt32 headerNumber = 0x9596;
         using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
         using (BinaryWriter writer = new BinaryWriter(fs))
         {
             writer.Write(headerNumber);
-            writer.Write(EdgeCount);
+            writer.Write(Edges.Count);
             writer.Write(SegmentCount);
-            foreach(Edge edge in Edges)
+            foreach (Edge edge in Edges)
             {
                 writer.Write(edge.Distance);
                 writer.Write(edge.ForwardSpeed);
@@ -214,5 +214,72 @@ public class GeoPackageImport
     private byte ReadByte(SQLiteDataReader reader, string columnName)
     {
         return reader[columnName] != DBNull.Value ? Convert.ToByte(reader[columnName]) : default(byte);
+    }
+
+    public void Optimize()
+    {
+        int count = 1;
+        while (count > 0)
+        {
+            count = 0;
+            foreach (var (id, node) in Nodes)
+            {
+                if (node.Edges.Count == 2)
+                {
+                    Edge e1 = node.Edges[0];
+                    Edge e2 = node.Edges[1];
+                    if(e1.Id == UInt32.MaxValue || e2.Id == UInt32.MaxValue)
+                        continue;
+
+                    if (e1.ForwardSpeed == e2.ForwardSpeed && e1.BackwardSpeed == e2.BackwardSpeed && e1.Attribute.Value == e2.Attribute.Value)
+                    {
+                        if (e1.Target == node && e2.Source == node)
+                        {
+                            e1.AddSegmentsAfter(e2);
+                            e1.Distance += e2.Distance;
+                            e2.Target.ReplaceEdge(e2, e1);
+                            e1.Target = e2.Target;
+                            e2.Id = UInt32.MaxValue;
+
+                            count++;
+                        }
+                        else if (e1.Source == node && e2.Target == node)
+                        {
+                            e2.AddSegmentsAfter(e1);
+                            e2.Distance += e1.Distance;
+                            e1.Target.ReplaceEdge(e1, e2);
+                            e2.Target = e1.Target;
+                            e1.Id = UInt32.MaxValue;
+
+                            count++;
+                        }
+                    }
+                    else if (e1.ForwardSpeed == e2.BackwardSpeed && e1.BackwardSpeed == e2.ForwardSpeed && e1.Attribute.Value == e2.Attribute.Reverse().Value)
+                    {
+                        if (e1.Target == node && e2.Target == node)
+                        {
+                            e1.AddSegmentsAfterReveresed(e2);
+                            e1.Distance += e2.Distance;
+                            e2.Source.ReplaceEdge(e2, e1);
+                            e1.Target = e2.Source;
+                            e2.Id = UInt32.MaxValue;
+
+                            count++;
+                        }
+                        else if (e1.Source == node && e2.Source == node)
+                        {
+                            e2.AddSegmentsBeforeReversed(e1);
+                            e2.Distance += e1.Distance;
+                            e1.Target.ReplaceEdge(e1, e2);
+                            e2.Source = e1.Target;
+                            e1.Id = UInt32.MaxValue;
+
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        Edges = Edges.Where(e => e.Id != UInt32.MaxValue).ToList();
     }
 }

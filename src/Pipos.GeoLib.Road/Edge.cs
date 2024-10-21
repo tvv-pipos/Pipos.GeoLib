@@ -1,5 +1,6 @@
 using NetTopologySuite.Geometries;
 using Pipos.GeoLib.Core.Model;
+using System.Linq;
 
 namespace Pipos.GeoLib.Road;
 
@@ -33,12 +34,20 @@ public class Edge
             Segments[i] = new Segment(segments[i * 4 + 0], segments[i * 4 + 1], segments[i * 4 + 2], segments[i * 4 + 3], this);
         }
     }
-
     public override bool Equals(Object? obj)
     {
         if(obj == null || !(obj is Edge))
             return false;
         Edge edge = (Edge)obj;
+        
+        return Id == edge.Id;
+    }
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
+    public bool IsSame(Edge edge)
+    {
         
         return (Source.Id == edge.Source.Id && Target.Id == edge.Target.Id && Distance == edge.Distance && 
                ForwardSpeed == edge.ForwardSpeed && BackwardSpeed == edge.BackwardSpeed && Attribute.Value == edge.Attribute.Value) || 
@@ -72,8 +81,19 @@ public class Edge
             }
         }
     }
-    public override int GetHashCode()
+
+    public void AddSegmentsAfter(Edge edge)
     {
-        return Id.GetHashCode();
+        Segments = Segments.Concat(edge.Segments).ToArray();
+    }
+
+    public void AddSegmentsAfterReveresed(Edge edge)
+    {
+        Segments = Segments.Concat(edge.Segments.Reverse()).ToArray();
+    }
+
+    public void AddSegmentsBeforeReversed(Edge edge)
+    {
+        Segments = edge.Segments.Reverse().Concat(Segments).ToArray();
     }
 }

@@ -69,7 +69,7 @@ public class Loader : ILoader
                         {
                             foreach(Edge e in sourceNode.Edges)
                             {
-                                if(e.Equals(edge))
+                                if(e.IsSame(edge))
                                 {
                                     e.Years.Add(years);
                                     edgeExists = true;
