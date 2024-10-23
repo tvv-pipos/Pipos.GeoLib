@@ -38,8 +38,16 @@ internal static class ShortestTime
                 if(next == current)
                     continue;
 
-                float speed = current == edge.Source ? edge.ForwardSpeed :  edge.BackwardSpeed;
-                if(speed > 0.0f)
+                bool prohibited = edge.Attribute.ForwardProhibited; 
+                float speed = edge.ForwardSpeed;
+
+                if(current == edge.Target) 
+                {
+                    prohibited = edge.Attribute.BackwardProhibited; 
+                    speed = edge.BackwardSpeed;
+                } 
+
+                if(!prohibited)
                 {
                     float newTime = weights[current.Id] + NetworkUtils.TimeUnitConversion * edge.Distance / speed;
                     if (weights.TryGetValue(next.Id, out float nextTime)) 

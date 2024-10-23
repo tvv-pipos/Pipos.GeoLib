@@ -27,8 +27,16 @@ internal static class WithinTime
 
                 Node next = edge.GetOther(current);
 
-                float speed = current == edge.Source ? edge.ForwardSpeed :  edge.BackwardSpeed;
-                if(speed > 0.0f)
+                bool prohibited = edge.Attribute.ForwardProhibited; 
+                float speed = edge.ForwardSpeed;
+
+                if(current == edge.Target) 
+                {
+                    prohibited = edge.Attribute.BackwardProhibited; 
+                    speed = edge.BackwardSpeed;
+                } 
+
+                if(!prohibited)
                 {
                     float newTime = weights[current.Id] + TimeUnitConversion * edge.Distance / speed;
                     if(newTime < maxTime)

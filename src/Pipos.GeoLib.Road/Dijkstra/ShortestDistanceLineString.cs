@@ -45,8 +45,16 @@ internal static class ShortestDistanceLineString
                 if(next == current)
                     continue;
 
-                float speed = current == edge.Source ? (float)edge.ForwardSpeed :  (float)edge.BackwardSpeed;
-                if(speed > 0.0f)
+                bool prohibited = edge.Attribute.ForwardProhibited; 
+                float speed = edge.ForwardSpeed;
+
+                if(current == edge.Target) 
+                {
+                    prohibited = edge.Attribute.BackwardProhibited; 
+                    speed = edge.BackwardSpeed;
+                } 
+
+                if(!prohibited)
                 {
                     float newDistance = weights[current.Id].Distance + edge.Distance;
                     float newTime = weights[current.Id].Time + TimeUnitConversion * edge.Distance / speed;

@@ -37,8 +37,8 @@ internal static class ShortestDistance
                 if(next == current)
                     continue;
 
-                float speed = current == edge.Source ? (float)edge.ForwardSpeed :  (float)edge.BackwardSpeed;
-                if(speed > 0.0f)
+                bool prohibited = current == edge.Source ? edge.Attribute.ForwardProhibited : edge.Attribute.BackwardProhibited;
+                if(!prohibited)
                 {
                     float new_distance = weights[current.Id] + edge.Distance;
                     if (weights.TryGetValue(next.Id, out float nextDistance)) 

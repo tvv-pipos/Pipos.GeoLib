@@ -160,14 +160,14 @@ internal static class NetworkUtils
             if(startP.Segment != null)
             {
                 var edge = startP.Segment.Edge;
-                if(edge.BackwardSpeed > 0.0f)
+                if(!edge.Attribute.BackwardProhibited)
                 {
                     weights[edge.Source.Id] = startP.SourceDistance + connectionDistance;
                     queue.Enqueue(edge.Source, weights[edge.Source.Id]);
                     HasResult = true;
                 }
 
-                if(edge.ForwardSpeed > 0.0f)
+                if(!edge.Attribute.ForwardProhibited)
                 {
                     weights[edge.Target.Id] = startP.TargetDistance + connectionDistance;
                     queue.Enqueue(edge.Target, weights[edge.Target.Id]);
@@ -192,14 +192,14 @@ internal static class NetworkUtils
             if(startP.Segment != null)
             {
                 var edge = startP.Segment.Edge;
-                if(edge.BackwardSpeed > 0.0f)
+                if(!edge.Attribute.BackwardProhibited)
                 {
                     weights[edge.Source.Id] = (TimeUnitConversion * startP.SourceDistance / (float)edge.BackwardSpeed) + connectionTime;
                     queue.Enqueue(edge.Source, weights[edge.Source.Id]);
                     HasResult = true;
                 }
 
-                if(edge.ForwardSpeed > 0.0f)
+                if(!edge.Attribute.ForwardProhibited)
                 {
                     weights[edge.Target.Id] = (TimeUnitConversion * startP.TargetDistance / (float)edge.ForwardSpeed) + connectionTime;
                     queue.Enqueue(edge.Target, weights[edge.Target.Id]);
@@ -227,7 +227,7 @@ internal static class NetworkUtils
             if(startP.Segment != null)
             {
                 var edge = startP.Segment.Edge;
-                if(edge.BackwardSpeed > 0.0f)
+                if(!edge.Attribute.BackwardProhibited)
                 {
                     float distance = startP.SourceDistance + connectionDistance;
                     float time = (TimeUnitConversion * startP.SourceDistance / (float)edge.BackwardSpeed) + connectionTime;
@@ -236,7 +236,7 @@ internal static class NetworkUtils
                     HasResult = true;
                 }
 
-                if(edge.ForwardSpeed > 0.0f)
+                if(!edge.Attribute.ForwardProhibited)
                 {
                     float distance = startP.TargetDistance + connectionDistance;
                     float time = (TimeUnitConversion * startP.TargetDistance / (float)edge.ForwardSpeed) + connectionTime;
@@ -266,7 +266,7 @@ internal static class NetworkUtils
             if(startP.Segment != null)
             {
                 var edge = startP.Segment.Edge;
-                if(edge.BackwardSpeed > 0.0f)
+                if(!edge.Attribute.BackwardProhibited)
                 {
                     float distance = startP.SourceDistance + connectionDistance;
                     float time = (TimeUnitConversion * startP.SourceDistance / (float)edge.BackwardSpeed) + connectionTime;
@@ -275,7 +275,7 @@ internal static class NetworkUtils
                     HasResult = true;
                 }
 
-                if(edge.ForwardSpeed > 0.0f)
+                if(!edge.Attribute.ForwardProhibited)
                 {
                     float distance = startP.TargetDistance + connectionDistance;
                     float time = (TimeUnitConversion * startP.TargetDistance / (float)edge.ForwardSpeed) + connectionTime;
@@ -299,7 +299,7 @@ internal static class NetworkUtils
             float dy = end.Y - start.Y;
             float ds = (start.X - start.Segment.X1) * (start.X - start.Segment.X1) + (start.Y - start.Segment.Y1) * (start.Y - start.Segment.Y1);
             float de = (end.X - start.Segment.X1) * (end.X - start.Segment.X1) + (end.Y - start.Segment.Y1) * (end.Y - start.Segment.Y1);
-            if(ds < de && edge.ForwardSpeed > 0)
+            if(ds < de && !edge.Attribute.ForwardProhibited)
             {
                 var distance = MathF.Sqrt(dx * dx + dy * dy);
                 var time = TimeUnitConversion * distance / edge.ForwardSpeed;
@@ -313,7 +313,7 @@ internal static class NetworkUtils
 
                 return new SingleEdgeResult{HasResult = true, Distance = distance, Time = time};
             }
-            else if(ds > de && edge.BackwardSpeed > 0)
+            else if(ds > de && edge.Attribute.BackwardProhibited)
             {
                 var distance = MathF.Sqrt(dx * dx + dy * dy);
                 var time = TimeUnitConversion * distance / edge.BackwardSpeed;
@@ -364,7 +364,7 @@ internal static class NetworkUtils
                 }
             }
 
-            if(forward && edge.ForwardSpeed > 0)
+            if(forward && !edge.Attribute.ForwardProhibited)
             {
                 float distance = start.TargetDistance;
                 for(int i = start_seg_idx + 1; i < end_seg_idx; i++)
@@ -381,7 +381,7 @@ internal static class NetworkUtils
 
                 return new SingleEdgeResult{HasResult = true, Distance = distance, Time = time};
             }
-            else if (!forward && edge.BackwardSpeed > 0)
+            else if (!forward && !edge.Attribute.BackwardProhibited)
             {
                 float distance = end.SourceDistance;
                 for(int i = end_seg_idx - 1; i > start_seg_idx; i--)
@@ -474,7 +474,7 @@ internal static class NetworkUtils
         {
             if(endP.Segment != null)
             {
-                var end_edge = endP.Segment.Edge;
+                var endEdge = endP.Segment.Edge;
                 float connectionDistance = 0.0f;
 
                 if(options.IncludeConnectionDistance)
@@ -483,13 +483,13 @@ internal static class NetworkUtils
                 }
 
                 
-                if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
+                if(!endEdge.Attribute.ForwardProhibited && weights.TryGetValue(endEdge.Source.Id, out var source))
                 {
                     float tmp = source + endP.SourceDistance + connectionDistance;
                     if(tmp < min) min = tmp;
                 }
 
-                if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
+                if(!endEdge.Attribute.BackwardProhibited && weights.TryGetValue(endEdge.Target.Id, out var target))
                 {
                     float tmp = target + endP.TargetDistance + connectionDistance;
                     if(tmp < min) min = tmp;
@@ -508,7 +508,7 @@ internal static class NetworkUtils
         {
             if(endP.Segment != null)
             {
-                var end_edge = endP.Segment.Edge;
+                var endEdge = endP.Segment.Edge;
                 float connectionTime = 0.0f;
 
                 if(options.IncludeConnectionDistance)
@@ -516,15 +516,15 @@ internal static class NetworkUtils
                     connectionTime = TimeUnitConversion * endP.GetConnectionDistance() / options.ConnectionSpeed;
                 }
 
-                if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
+                if(!endEdge.Attribute.ForwardProhibited && weights.TryGetValue(endEdge.Source.Id, out var source))
                 {
-                    var tmp = source + (TimeUnitConversion * endP.SourceDistance / (float)end_edge.ForwardSpeed) + connectionTime;
+                    var tmp = source + (TimeUnitConversion * endP.SourceDistance / (float)endEdge.ForwardSpeed) + connectionTime;
                     if(tmp < min) min = tmp;
                 }
 
-                if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
+                if(!endEdge.Attribute.BackwardProhibited && weights.TryGetValue(endEdge.Target.Id, out var target))
                 {
-                    var tmp = target + (TimeUnitConversion *  endP.TargetDistance / (float)end_edge.BackwardSpeed) + connectionTime;
+                    var tmp = target + (TimeUnitConversion *  endP.TargetDistance / (float)endEdge.BackwardSpeed) + connectionTime;
                     if(tmp < min) min = tmp;   
                 }
             }
@@ -542,7 +542,7 @@ internal static class NetworkUtils
         {
             if(endP.Segment != null)
             {
-                var end_edge = endP.Segment.Edge;
+                var endEdge = endP.Segment.Edge;
                 float connectionDistance = 0.0f;
                 float connectionTime = 0.0f;
 
@@ -552,23 +552,23 @@ internal static class NetworkUtils
                     connectionTime = TimeUnitConversion * endP.GetConnectionDistance() / options.ConnectionSpeed;
                 }
 
-                if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
+                if(!endEdge.Attribute.ForwardProhibited && weights.TryGetValue(endEdge.Source.Id, out var source))
                 {
                     float tmp = source.Distance + endP.SourceDistance + connectionDistance;
                     if(tmp < min)
                     {
                         min = tmp;
-                        time = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)end_edge.ForwardSpeed) + connectionTime;
+                        time = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)endEdge.ForwardSpeed) + connectionTime;
                     }
                 }
 
-                if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
+                if(!endEdge.Attribute.BackwardProhibited && weights.TryGetValue(endEdge.Target.Id, out var target))
                 {
                     float tmp = target.Distance + endP.TargetDistance + connectionDistance;
                     if(tmp < min)
                     {
                         min = tmp;
-                        time = target.Time + (TimeUnitConversion * endP.TargetDistance / (float)end_edge.BackwardSpeed) + connectionTime;
+                        time = target.Time + (TimeUnitConversion * endP.TargetDistance / (float)endEdge.BackwardSpeed) + connectionTime;
                     }
                 }
             }
@@ -584,7 +584,7 @@ internal static class NetworkUtils
         {
             if(endP.Segment != null)
             {
-                var end_edge = endP.Segment.Edge;
+                var endEdge = endP.Segment.Edge;
                 float connectionDistance = 0.0f;
                 float connectionTime = 0.0f;
 
@@ -594,9 +594,9 @@ internal static class NetworkUtils
                     connectionTime = TimeUnitConversion * endP.GetConnectionDistance() / options.ConnectionSpeed;
                 }
 
-                if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
+                if(!endEdge.Attribute.ForwardProhibited && weights.TryGetValue(endEdge.Source.Id, out var source))
                 {
-                    var tmp = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)end_edge.ForwardSpeed) + connectionTime;
+                    var tmp = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)endEdge.ForwardSpeed) + connectionTime;
                     if(tmp < min)
                     {
                         min = tmp;
@@ -604,9 +604,9 @@ internal static class NetworkUtils
                     }
                 }
 
-                if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
+                if(!endEdge.Attribute.BackwardProhibited && weights.TryGetValue(endEdge.Target.Id, out var target))
                 {
-                    var tmp = target.Time + (TimeUnitConversion *  endP.TargetDistance / (float)end_edge.BackwardSpeed) + connectionTime;
+                    var tmp = target.Time + (TimeUnitConversion *  endP.TargetDistance / (float)endEdge.BackwardSpeed) + connectionTime;
                     if(tmp < min)
                     {
                         min = tmp;
@@ -644,7 +644,7 @@ internal static class NetworkUtils
         {
             if(endP.Segment != null)
             {
-                var end_edge = endP.Segment.Edge;
+                var endEdge = endP.Segment.Edge;
                 float connectionDistance = 0.0f;
                 float connectionTime = 0.0f;
 
@@ -654,26 +654,26 @@ internal static class NetworkUtils
                     connectionTime = TimeUnitConversion * endP.GetConnectionDistance() / options.ConnectionSpeed;
                 }
 
-                if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
+                if(!endEdge.Attribute.ForwardProhibited && weights.TryGetValue(endEdge.Source.Id, out var source))
                 {
-                    var tmp = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)end_edge.ForwardSpeed) + connectionTime;
+                    var tmp = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)endEdge.ForwardSpeed) + connectionTime;
                     if(tmp < min) 
                     {
                         min = tmp;
                         distance = source.Distance + endP.SourceDistance + connectionDistance;
-                        node = end_edge.Source;
+                        node = endEdge.Source;
                         cp = endP;
                     }
                 }
 
-                if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
+                if(!endEdge.Attribute.BackwardProhibited && weights.TryGetValue(endEdge.Target.Id, out var target))
                 {
-                    var tmp = target.Time + (TimeUnitConversion *  endP.TargetDistance / (float)end_edge.BackwardSpeed) + connectionTime;
+                    var tmp = target.Time + (TimeUnitConversion *  endP.TargetDistance / (float)endEdge.BackwardSpeed) + connectionTime;
                     if(tmp < min) 
                     {
                         min = tmp;
                         distance =  target.Distance + endP.TargetDistance + connectionDistance;
-                        node = end_edge.Target;
+                        node = endEdge.Target;
                         cp = endP;
                     }
                 }
@@ -723,7 +723,7 @@ internal static class NetworkUtils
         {
             if(endP.Segment != null)
             {
-                var end_edge = endP.Segment.Edge;
+                var endEdge = endP.Segment.Edge;
                 float connectionDistance = 0.0f;
                 float connectionTime = 0.0f;
 
@@ -733,26 +733,26 @@ internal static class NetworkUtils
                     connectionTime = TimeUnitConversion * endP.GetConnectionDistance() / options.ConnectionSpeed;
                 }
 
-                if(end_edge.ForwardSpeed > 0.0f && weights.TryGetValue(end_edge.Source.Id, out var source))
+                if(!endEdge.Attribute.ForwardProhibited && weights.TryGetValue(endEdge.Source.Id, out var source))
                 {
                     float tmp = source.Distance + endP.SourceDistance + connectionDistance;
                     if(tmp < min) 
                     {
                         min = tmp;
-                        time = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)end_edge.ForwardSpeed) + connectionTime;
-                        node = end_edge.Source;
+                        time = source.Time + (TimeUnitConversion * endP.SourceDistance / (float)endEdge.ForwardSpeed) + connectionTime;
+                        node = endEdge.Source;
                         cp = endP;
                     }
                 }
 
-                if(end_edge.BackwardSpeed > 0.0f && weights.TryGetValue(end_edge.Target.Id, out var target))
+                if(!endEdge.Attribute.BackwardProhibited && weights.TryGetValue(endEdge.Target.Id, out var target))
                 {
                     float tmp = target.Distance + endP.TargetDistance + connectionDistance;
                     if(tmp < min) 
                     {
                         min = tmp;
-                        time = target.Time + (TimeUnitConversion * endP.TargetDistance / (float)end_edge.BackwardSpeed) + connectionTime;
-                        node = end_edge.Target;
+                        time = target.Time + (TimeUnitConversion * endP.TargetDistance / (float)endEdge.BackwardSpeed) + connectionTime;
+                        node = endEdge.Target;
                         cp = endP;
                     }
                 }

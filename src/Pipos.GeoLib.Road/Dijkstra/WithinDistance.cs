@@ -27,8 +27,8 @@ internal static class WithinDistance
 
                 Node next = edge.GetOther(current);
 
-                float speed = current == edge.Source ? edge.ForwardSpeed :  edge.BackwardSpeed;
-                if(speed > 0.0f)
+                bool prohibited = current == edge.Source ? edge.Attribute.ForwardProhibited : edge.Attribute.BackwardProhibited;
+                if(!prohibited)
                 {
                     float newDistance = weights[current.Id] + edge.Distance;
                     if(newDistance < maxDistance)

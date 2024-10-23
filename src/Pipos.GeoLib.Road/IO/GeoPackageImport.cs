@@ -8,22 +8,30 @@ using Pipos.GeoLib.Core.Model;
 namespace Pipos.GeoLib.Road.IO;
 public class GeoPackageImport
 {
-    private string _connectionString;
     private List<Edge> Edges = new List<Edge>();
     private Dictionary<UInt64, Node> Nodes = new Dictionary<ulong, Node>();
-    private List<Segment> Segments = new List<Segment>();
-    private UInt32 EdgeCount;
-    private UInt32 SegmentCount;
-    private UInt32 NodeCount;
+    //private List<Segment> Segments = new List<Segment>();
+    private int SegmentCount = 0;
 
-    public GeoPackageImport(string filePath)
+    public GeoPackageImport()
     {
-        _connectionString = $"Data Source={filePath};Version=3;";
+
     }
 
-    public void ReadContents()
+    public GeoPackageImport Clear()
     {
-        using (var connection = new SQLiteConnection(_connectionString))
+        Edges.Clear();
+        Nodes.Clear();
+        SegmentCount = 0;
+
+        return this;
+    }
+
+    public GeoPackageImport ImportGeoPackage(string filePath)
+    {
+        string connectionString = $"Data Source={filePath};Version=3;";
+
+        using (var connection = new SQLiteConnection(connectionString))
         {
             string tableName = "";
             connection.Open();
@@ -43,18 +51,16 @@ public class GeoPackageImport
             if (tableName != "")
                 ReadTable(tableName, connection);
         }
+        return this;
     }
 
 
     private void ReadTable(string tableName, SQLiteConnection connection)
     {
-        EdgeCount = 0;
-        NodeCount = 0;
-        SegmentCount = 0;
+        uint nodeCount = 0;
+        uint edgeCount = 0;
         YearSet years = new YearSet(); 
-        Edges.Clear();
-        Nodes.Clear();
-        Segments.Clear();
+        Clear();
 
         var geoReader = new GeoPackageGeoReader();
         string selectNetowrk = $"SELECT geom, b_hogst_225, f_hogst_225, klass_181, extlen, F_ForbjudenFardriktning, B_ForbjudenFardriktning, Farjeled, typ_41 FROM {tableName};";
@@ -114,14 +120,14 @@ public class GeoPackageImport
                     if (!Nodes.TryGetValue(source_pos, out sourceNode))
                     {
                         nodesExists = false;
-                        sourceNode = new Node(NodeCount++);
+                        sourceNode = new Node(nodeCount++);
                         Nodes.Add(source_pos, sourceNode);
                     }
 
                     if (!Nodes.TryGetValue(target_pos, out targetNode))
                     {
                         nodesExists = false;
-                        targetNode = new Node(NodeCount++);
+                        targetNode = new Node(nodeCount++);
                         Nodes.Add(target_pos, targetNode);
                     }
 
@@ -146,7 +152,7 @@ public class GeoPackageImport
                         prevY = y;
                     }
 
-                    Edge edge = new Edge(EdgeCount, sourceNode, targetNode, extlen, f_hogst_225, b_hogst_225, segments.ToArray(), attribute, years);
+                    Edge edge = new Edge(edgeCount, sourceNode, targetNode, extlen, f_hogst_225, b_hogst_225, segments.ToArray(), attribute, years);
 
                     if (nodesExists)
                     {
@@ -167,25 +173,23 @@ public class GeoPackageImport
                     if (edge.Segments.Length == 0)
                         continue;
 
-                    EdgeCount++;
-                    SegmentCount += (UInt32)edge.Segments.Length;
+                    edgeCount++;
+                    SegmentCount += edge.Segments.Length;
                     sourceNode.Edges.Add(edge);
                     targetNode.Edges.Add(edge);
                     Edges.Add(edge);
 
-                    for(uint s = 0; s < edge.Segments.Length; s++)
+                    /*for(uint s = 0; s < edge.Segments.Length; s++)
                     {
                         Segments.Add(edge.Segments[s]);
-                    }
+                    }*/
                 }
             }
         }
     }
 
-    public void ExportToBinaryFile(string path)
+    public GeoPackageImport ExportToBinaryFile(string path)
     {
-        System.Console.WriteLine($"{NodeCount}, {Edges.Count}, {SegmentCount}");
-
         UInt32 headerNumber = 0x9596;
         using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
         using (BinaryWriter writer = new BinaryWriter(fs))
@@ -208,15 +212,95 @@ public class GeoPackageImport
                     writer.Write(segment.Y2);
                 }
             }
-        }     
+        }
+        return this;     
     }
 
-    private byte ReadByte(SQLiteDataReader reader, string columnName)
+    public GeoPackageImport SetFerrySpeed(byte speed)
     {
-        return reader[columnName] != DBNull.Value ? Convert.ToByte(reader[columnName]) : default(byte);
+        foreach (Edge edge in Edges)
+        {
+            if(edge.Attribute.Ferry)
+            {
+                if(!edge.Attribute.ForwardProhibited)
+                    edge.ForwardSpeed = speed;
+
+                if(!edge.Attribute.BackwardProhibited)              
+                    edge.BackwardSpeed = speed;
+            }
+        }
+        return this;
     }
 
-    public void Optimize()
+    public GeoPackageImport RemoveSmallerIslands()
+    {
+        Queue<Edge> q = new Queue<Edge>();
+        bool[] visited = new bool[Edges.Count];
+        int[] group = new int[Edges.Count];
+        int group_id = 0;
+        int maxCount = 0;
+        int maxCountGroup = 0;
+
+        foreach(Edge edge in Edges)
+        {
+            int edgeCount = 0;
+            if(visited[edge.Id] == false)
+            {
+                visited[edge.Id] = true;
+                edgeCount++;
+
+                q.Enqueue(edge);
+
+                while (q.TryDequeue(out var current)) 
+                {
+                    group[current.Id] = group_id;
+
+                    if(!current.Attribute.ForwardProhibited)
+                    {
+                        foreach(Edge neighbor in current.Target.Edges)
+                        {
+                            if (!visited[neighbor.Id]) 
+                            {
+                                visited[neighbor.Id] = true;
+                                edgeCount++;
+                                q.Enqueue(neighbor);
+                            }
+                        }
+                    }
+
+                    if(!current.Attribute.BackwardProhibited)
+                    {
+                        foreach(Edge neighbor in current.Source.Edges)
+                        {
+                            if (!visited[neighbor.Id]) 
+                            {
+                                visited[neighbor.Id] = true;
+                                edgeCount++;
+                                q.Enqueue(neighbor);
+                            }
+                        }
+                    }
+                }
+                if(edgeCount > maxCount) 
+                {
+                    maxCount = edgeCount;
+                    maxCountGroup = group_id;
+                }
+                group_id++;
+            }
+        }
+        Edges = Edges.Where(e => group[e.Id] == maxCountGroup).ToList();
+
+        // Recalculate ids
+        for (int i = 0; i < Edges.Count; i++)
+        {
+            Edges[i].Id = (uint)i;
+        }
+
+        return this;
+    }
+
+    public GeoPackageImport Optimize()
     {
         int count = 1;
         while (count > 0)
@@ -240,7 +324,7 @@ public class GeoPackageImport
                             e2.Target.ReplaceEdge(e2, e1);
                             e1.Target = e2.Target;
                             e2.Id = UInt32.MaxValue;
-
+                            node.Id = UInt32.MaxValue;
                             count++;
                         }
                         else if (e1.Source == node && e2.Target == node)
@@ -250,7 +334,7 @@ public class GeoPackageImport
                             e1.Target.ReplaceEdge(e1, e2);
                             e2.Target = e1.Target;
                             e1.Id = UInt32.MaxValue;
-
+                            node.Id = UInt32.MaxValue;
                             count++;
                         }
                     }
@@ -263,7 +347,7 @@ public class GeoPackageImport
                             e2.Source.ReplaceEdge(e2, e1);
                             e1.Target = e2.Source;
                             e2.Id = UInt32.MaxValue;
-
+                            node.Id = UInt32.MaxValue;
                             count++;
                         }
                         else if (e1.Source == node && e2.Source == node)
@@ -273,13 +357,29 @@ public class GeoPackageImport
                             e1.Target.ReplaceEdge(e1, e2);
                             e2.Source = e1.Target;
                             e1.Id = UInt32.MaxValue;
-
+                            node.Id = UInt32.MaxValue;
                             count++;
                         }
                     }
                 }
             }
         }
+        Nodes = Nodes.Where(n => n.Value.Id != UInt32.MaxValue).ToDictionary();
         Edges = Edges.Where(e => e.Id != UInt32.MaxValue).ToList();
+
+        // Recalculate ids
+        for (int i = 0; i < Edges.Count; i++)
+        {
+            Edges[i].Id = (uint)i;
+        }
+
+        return this;
+    }
+
+
+    
+    private byte ReadByte(SQLiteDataReader reader, string columnName)
+    {
+        return reader[columnName] != DBNull.Value ? Convert.ToByte(reader[columnName]) : default(byte);
     }
 }
