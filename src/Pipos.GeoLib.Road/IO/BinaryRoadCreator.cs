@@ -103,11 +103,16 @@ public class BinaryRoadCreator
             {
                 throw new Exception("edge.BackwardSpeed == 0 && !edge.Attribute.BackwardProhibited");
             }
+
+            if(edge.Attribute.ForwardProhibited && edge.Attribute.BackwardProhibited)
+            {
+                throw new Exception("edge.Attribute.ForwardProhibited && edge.Attribute.BackwardProhibited");
+            }
         }
         return this;
     }
 
-    public BinaryRoadCreator RemoveSmallerIslands()
+    public BinaryRoadCreator CalculateDisconnectedIslands()
     {
         Queue<Edge> q = new Queue<Edge>();
         bool[] visited = new bool[Edges.Count];
@@ -164,12 +169,16 @@ public class BinaryRoadCreator
                 group_id++;
             }
         }
-        Edges = Edges.Where(e => group[e.Id] == maxCountGroup).ToList();
 
         // Recalculate ids
-        for (int i = 0; i < Edges.Count; i++)
+        foreach (Edge edge in Edges)
         {
-            Edges[i].Id = (uint)i;
+            if(group[edge.Id] != maxCountGroup) 
+            {
+                var attr = edge.Attribute;
+                attr.DisconnectedIsland = true;
+                edge.Attribute = attr;
+            }
         }
 
         return this;
@@ -303,13 +312,19 @@ public class BinaryRoadCreator
                     bool Farjeled = Convert.ToBoolean(reader["Farjeled"]);
                     byte typ_41 = ReadByte(reader, "typ_41");
 
+                    if(F_ForbjudenFardriktning && B_ForbjudenFardriktning)
+                    {
+                        continue;
+                    }
+
                     Attribute attribute = new Attribute
                     {
                         Class = klass_181,
                         Ferry = Farjeled,
                         ForwardProhibited = F_ForbjudenFardriktning,
                         BackwardProhibited = B_ForbjudenFardriktning,
-                        Motorway = typ_41 == 1
+                        Motorway = typ_41 == 1,
+                        DisconnectedIsland = false
                     };
 
                     float prevX = (float)coordinates[0].X;

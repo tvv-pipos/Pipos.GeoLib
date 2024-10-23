@@ -47,8 +47,8 @@ public class NetworkTest
             .BuildNetworkManager()
             .LoadNetwork();
 
-        var visby = network.Connect.Point(697105, 6391211, 250, year, null!);
-        var ljugarn = network.Connect.Point(722621, 6361103, 250, year, null!); 
+        var visby = network.Connect.Point(697105, 6391211, 250, year, new ConnectionRule());
+        var ljugarn = network.Connect.Point(722621, 6361103, 250, year, new ConnectionRule()); 
         Assert.That(visby.IsConnected(), Is.True);
         Assert.That(ljugarn.IsConnected(), Is.True);
 
@@ -68,7 +68,7 @@ public class NetworkTest
             .BuildNetworkManager()
             .LoadNetwork();
 
-        var visby = network.Connect.Point(697105, 6391211, 250, year, null!);
+        var visby = network.Connect.Point(697105, 6391211, 250, year, new ConnectionRule());
         Assert.That(visby.IsConnected(), Is.True);
 
         var connections = new List<IConnection>();
@@ -76,7 +76,7 @@ public class NetworkTest
         {
             for (var y = 6361103; y < 6391211; y += 10000)
             {
-                var connection = network.Connect.Point(x, y, 5000, year, null!);
+                var connection = network.Connect.Point(x, y, 5000, year, new ConnectionRule());
                 Assert.That(connection.IsConnected, Is.True);
                 connections.Add(connection);
             }

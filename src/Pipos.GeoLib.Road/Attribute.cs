@@ -73,6 +73,21 @@ public struct Attribute
         }
     }
 
+    public bool DisconnectedIsland
+    {
+        get
+        {
+            return (Value & 0x100U) != 0;
+        }
+        set
+        {
+            if(value)
+                Value |= 0x100U;
+            else
+                Value &= ~0x100U;
+        }
+    }
+
     //public int ADT => (int)(Value >> 8);
 
     public Attribute()

@@ -45,6 +45,20 @@ public class ConnectionIndex : IConnectionIndex
 
     public IConnection Point(float x, float y, float radius, Year year, IConnectionRule rule)
     {
+        if(rule is not ConnectionRule)
+            return new Connection();
+        
+        var connectionRule = (ConnectionRule)rule;
+        Attribute noAttr = new Attribute
+        {
+            Class = 0,
+            Ferry = connectionRule.NoFerry,
+            ForwardProhibited = connectionRule.NoOneWay,
+            BackwardProhibited = connectionRule.NoOneWay,
+            Motorway = connectionRule.NoMotorway,
+            DisconnectedIsland = connectionRule.NoDisconnectedIsland
+        };
+
         Envelope searchEnvelope = new Envelope(x - radius, x + radius, y - radius, y + radius);
         IList<Segment> segements = RTree.Query(searchEnvelope);
         float distance = float.MaxValue;
@@ -52,7 +66,8 @@ public class ConnectionIndex : IConnectionIndex
         Segment? segment = null;
         foreach(Segment s in segements)
         {
-            if(s.Edge.Years.HasYear(year))
+            if(s.Edge.Years.HasYear(year) && ((noAttr.Value & s.Edge.Attribute.Value) == 0) 
+                && (s.Edge.Attribute.DisconnectedIsland || !connectionRule.OnlyDisconnectedIsland))
             {
                 float tmp_distance, tmp_x, tmp_y;
                 s.DistanceAndPosFromPoint(x, y, out tmp_distance, out tmp_x, out tmp_y);
